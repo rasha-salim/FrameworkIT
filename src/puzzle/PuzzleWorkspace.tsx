@@ -54,27 +54,16 @@ export const PuzzleWorkspace: React.FC = () => {
   const currentPuzzleId = useGameStore((s) => s.currentPuzzleId);
   const setPhase = useGameStore((s) => s.setPhase);
 
-  // Transition to results phase when simulation completes
-  useEffect(() => {
-    if (simulationState.completed) {
-      setPhase('results');
-    }
-  }, [simulationState.completed, setPhase]);
-
-  const nodeTypes: NodeTypes = useMemo(
-    () => ({
-      'client-pool': ClientPoolNode,
-      'load-balancer': LoadBalancerNode,
-      'web-server': WebServerNode,
-      'cache': CacheNode,
-      'database': DatabaseNode,
-      'read-replica': ReadReplicaNode,
-    }),
-    []
-  );
+  // Reset simulation state when entering puzzle phase with a new puzzle
+  // This must run BEFORE the completion-detection effect
+  const puzzleLoadedRef = React.useRef(false);
 
   useEffect(() => {
     if (!currentPuzzleId) return;
+
+    // Reset stale simulation state before loading new puzzle
+    puzzleLoadedRef.current = false;
+    resetSimulation();
 
     loadPuzzle(currentChapter, currentPuzzleId).then((data) => {
       setPuzzleData(data);
@@ -95,15 +84,61 @@ export const PuzzleWorkspace: React.FC = () => {
 
       setNodes(fixedNodes);
       setEdges([]);
+      puzzleLoadedRef.current = true;
     });
-  }, [currentChapter, currentPuzzleId, setPuzzleData, setNodes, setEdges]);
+  }, [currentChapter, currentPuzzleId, setPuzzleData, setNodes, setEdges, resetSimulation]);
+
+  // Transition to results phase when simulation completes (only after puzzle is loaded)
+  useEffect(() => {
+    if (simulationState.completed && puzzleLoadedRef.current) {
+      setPhase('results');
+    }
+  }, [simulationState.completed, setPhase]);
+
+  const nodeTypes: NodeTypes = useMemo(
+    () => ({
+      'client-pool': ClientPoolNode,
+      'load-balancer': LoadBalancerNode,
+      'web-server': WebServerNode,
+      'cache': CacheNode,
+      'database': DatabaseNode,
+      'read-replica': ReadReplicaNode,
+    }),
+    []
+  );
+
+  const removeNode = usePuzzleStore((s) => s.removeNode);
 
   const onNodesChange: OnNodesChange = useCallback(
     (changes) => {
       if (simulationState.running) return;
-      setNodes(applyNodeChanges(changes, nodes));
+
+      // Filter out delete changes for fixed nodes
+      const filteredChanges = changes.filter((change) => {
+        if (change.type === 'remove') {
+          const node = nodes.find((n) => n.id === change.id);
+          return node && !node.data?.fixed;
+        }
+        return true;
+      });
+
+      if (filteredChanges.length === 0) return;
+
+      // Handle removals through the store's removeNode (cleans up edges too)
+      const removals = filteredChanges.filter((c) => c.type === 'remove');
+      const otherChanges = filteredChanges.filter((c) => c.type !== 'remove');
+
+      if (otherChanges.length > 0) {
+        setNodes(applyNodeChanges(otherChanges, nodes));
+      }
+
+      for (const removal of removals) {
+        if (removal.type === 'remove') {
+          removeNode(removal.id);
+        }
+      }
     },
-    [nodes, setNodes, simulationState.running]
+    [nodes, setNodes, removeNode, simulationState.running]
   );
 
   const onEdgesChange: OnEdgesChange = useCallback(
@@ -227,6 +262,7 @@ export const PuzzleWorkspace: React.FC = () => {
             onEdgesChange={onEdgesChange}
             onConnect={onConnect}
             nodeTypes={nodeTypes}
+            deleteKeyCode={simulationState.running ? null : ['Backspace', 'Delete']}
             fitView
             proOptions={{ hideAttribution: true }}
             style={{ background: '#0d1220' }}

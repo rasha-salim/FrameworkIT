@@ -2,7 +2,7 @@ SYSTEM DESIGN GAME - PROGRESS TRACKER
 ======================================
 Last updated: 2026-02-12
 
-PROJECT STATUS: Ch2-3 Implemented + Chapter Progression + Reactive World
+PROJECT STATUS: Ch2-3 Implemented + Chapter Progression + Reactive World + Bug Fixes + Chibi Tech Sprites
 
 CHAPTERS 2-3 IMPLEMENTATION (2026-02-12)
 ------------------------------------------------------
@@ -62,10 +62,33 @@ CHAPTER PROGRESSION SYSTEM (2026-02-12) [COMPLETE]
 - App.tsx HUD: shows "Ch N: chapter-name", dynamic NPC name, per-chapter best grades, chapters completed counter
 - Character design samples page created (character-samples.html) with 3 art styles for user review
 
+BUG FIX: Stale congratulations card on chapter transition (2026-02-12) [COMPLETE]
+- PuzzleWorkspace showed Ch1 results when entering Ch2 puzzle (simulationState.completed was stale)
+- Fix: added puzzleLoadedRef guard - completion effect only fires after new puzzle data loads
+- Fix: resetSimulation() called in puzzle loading effect before loading new data
+- Fix: DialogueEngine.handleAction calls resetSimulation() before entering puzzle phase (belt-and-suspenders)
+
+FEATURE: Delete elements in puzzle workspace (2026-02-12) [COMPLETE]
+- Players can now delete user-added nodes with Backspace/Delete keys
+- Fixed nodes (client-pool, pre-placed components) are protected from deletion
+- onNodesChange filters out remove changes for nodes with data.fixed === true
+- Removals go through PuzzleStore.removeNode which also cleans up connected edges
+- deleteKeyCode disabled during simulation to prevent accidental deletions
+
+CHARACTER SPRITES: Chibi Tech Style C (2026-02-12) [COMPLETE]
+- BootScene.ts rewritten with detailed pixel art generation (was plain colored rectangles)
+- Style: Chibi Tech (20x28 base, 2x game scale = 40x56 sprite size)
+- Player: messy brown hair, blue hoodie, white/blue chibi eyes, yellow laptop sticker, dark pants, grey shoes
+- Sarah (SRE): long red hair with side strands, green headset, green eyes, green jacket with light chest area, green boots
+- Marcus (Senior Eng): neat dark hair, darker skin, purple glasses frames, purple blazer with shirt, dark pants/shoes
+- Each character drawn pixel-by-pixel using Phaser Graphics API + generateTexture
+- NPC label offsets (y-40 name, y+36 prompt) match new 40x56 sprite dimensions perfectly
+- Environment sprites (server-rack, server-light) kept as simple colored rectangles
+
 NEXT STEPS:
-- Pick character art style and implement sprites (character-samples.html has 3 options)
 - Chapters 4-6 still need implementation (API Design, Rate Limiting, Message Queues)
 - End-to-end testing of full Ch1->Ch2->Ch3 game loop
+- Walk animation frames for characters (optional enhancement)
 
 ------------------------------------------------------
 

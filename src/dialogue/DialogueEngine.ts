@@ -2,6 +2,7 @@ import { loadDialogue } from '../core/ContentLoader';
 import { EventBus } from '../core/EventBus';
 import { useDialogueStore } from './DialogueStore';
 import { useGameStore } from '../core/GameStore';
+import { usePuzzleStore } from '../puzzle/PuzzleStore';
 import type { DialogueData } from '../types';
 
 // Maps chapter -> npc -> dialogue config
@@ -156,6 +157,7 @@ export class DialogueEngine {
       if (!config) return;
 
       useDialogueStore.getState().endDialogue();
+      usePuzzleStore.getState().resetSimulation();
       gameState.setPhase('puzzle');
       gameState.setCurrentPuzzleId(config.puzzleId);
       EventBus.emit('dialogue:start-puzzle', config.puzzleId);
@@ -173,6 +175,7 @@ export class DialogueEngine {
       const config = chapterConfig[primaryNpc];
 
       useDialogueStore.getState().endDialogue();
+      usePuzzleStore.getState().resetSimulation();
       gameState.setPhase('puzzle');
       gameState.setCurrentPuzzleId(config?.puzzleId || 'handle-10k-rps');
       EventBus.emit('dialogue:start-puzzle', config?.puzzleId || 'handle-10k-rps');
