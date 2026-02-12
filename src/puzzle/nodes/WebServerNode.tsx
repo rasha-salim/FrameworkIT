@@ -94,6 +94,12 @@ export const WebServerNode: React.FC<NodeProps> = ({ data }) => {
         <span>{currentLoad > 0 ? `${currentLoad.toLocaleString()}/s` : 'Idle'}</span>
         <span style={{ color: getHealthColor() }}>{currentLoad > 0 ? getHealthLabel() : ''}</span>
       </div>
+
+      <Handle
+        type="source"
+        position={Position.Right}
+        style={{ background: '#44cc66', width: 10, height: 10 }}
+      />
     </div>
   );
 };

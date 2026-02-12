@@ -1,7 +1,8 @@
 import { create } from 'zustand';
+import { schedulePush } from '../sync/ProgressSync';
 import type { GamePhase } from '../types';
 
-const CHAPTER_ORDER = [
+export const CHAPTER_ORDER = [
   '01-load-balancing',
   '02-caching',
   '03-databases',
@@ -34,13 +35,25 @@ function loadCompletedChapters(): string[] {
   }
 }
 
+function deriveCurrentChapter(completed: string[]): string {
+  for (let i = 0; i < CHAPTER_ORDER.length; i++) {
+    if (!completed.includes(CHAPTER_ORDER[i])) {
+      return CHAPTER_ORDER[i];
+    }
+  }
+  // All completed - stay on last chapter
+  return CHAPTER_ORDER[CHAPTER_ORDER.length - 1];
+}
+
+const _completedChapters = loadCompletedChapters();
+
 export const useGameStore = create<GameState>((set, get) => ({
   phase: 'exploring',
-  currentChapter: '01-load-balancing',
+  currentChapter: deriveCurrentChapter(_completedChapters),
   currentPuzzleId: null,
   puzzleCompleted: false,
   bestGrade: null,
-  completedChapters: loadCompletedChapters(),
+  completedChapters: _completedChapters,
 
   setPhase: (phase) => set({ phase }),
   setCurrentChapter: (chapter) => set({ currentChapter: chapter }),
@@ -54,6 +67,7 @@ export const useGameStore = create<GameState>((set, get) => ({
       const updated = [...completedChapters, chapter];
       localStorage.setItem('completed-chapters', JSON.stringify(updated));
       set({ completedChapters: updated });
+      schedulePush();
     }
   },
 

@@ -26,6 +26,14 @@ export const CacheNode: React.FC<NodeProps> = ({ id, data }) => {
     setNodes(updated);
   };
 
+  const handleTTLChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const val = Math.max(1, Math.min(300, parseInt(e.target.value) || 1));
+    const updated = nodes.map((n) =>
+      n.id === id ? { ...n, data: { ...n.data, ttlSeconds: val } } : n
+    );
+    setNodes(updated);
+  };
+
   return (
     <div style={{
       background: 'linear-gradient(135deg, #2a1f0a, #352a12)',
@@ -90,8 +98,32 @@ export const CacheNode: React.FC<NodeProps> = ({ id, data }) => {
         Hit: {Math.round(hitRate)}%
       </div>
 
-      <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 11, color: '#8899aa' }}>
-        <span>TTL: {ttlSeconds}s</span>
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', fontSize: 11, color: '#8899aa', gap: 8 }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
+          <span>TTL:</span>
+          <input
+            type="number"
+            value={ttlSeconds}
+            onChange={handleTTLChange}
+            disabled={running}
+            min={1}
+            max={300}
+            style={{
+              width: 48,
+              background: '#1a1a2e',
+              color: '#ffbb66',
+              border: '1px solid #996622',
+              borderRadius: 3,
+              padding: '2px 4px',
+              fontSize: 11,
+              fontFamily: 'monospace',
+              textAlign: 'center',
+              cursor: running ? 'not-allowed' : 'text',
+              opacity: running ? 0.6 : 1,
+            }}
+          />
+          <span>s</span>
+        </div>
         <span>Size: {maxEntries}</span>
       </div>
 

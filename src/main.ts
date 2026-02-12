@@ -4,34 +4,72 @@ import ReactDOM from 'react-dom/client';
 import { BootScene } from './scenes/BootScene';
 import { WorldScene } from './scenes/WorldScene';
 import { App } from './ui/App';
+import { AuthGuard } from './auth/AuthGuard';
 import { DialogueEngine } from './dialogue/DialogueEngine';
+import { useAuthStore } from './auth/AuthStore';
+import { supabase } from './lib/supabase';
+import { pullFromCloud } from './sync/ProgressSync';
 
 // Initialize dialogue system (sets up EventBus listeners)
 DialogueEngine.init();
 
-const config: Phaser.Types.Core.GameConfig = {
-  type: Phaser.AUTO,
-  width: 1024,
-  height: 600,
-  parent: 'game-container',
-  backgroundColor: '#0a0e1a',
-  physics: {
-    default: 'arcade',
-    arcade: {
-      gravity: { x: 0, y: 0 },
-      debug: false,
+let phaserGame: Phaser.Game | null = null;
+
+function startPhaserGame() {
+  if (phaserGame) return; // Already running
+
+  const config: Phaser.Types.Core.GameConfig = {
+    type: Phaser.AUTO,
+    width: 1024,
+    height: 600,
+    parent: 'game-container',
+    backgroundColor: '#0a0e1a',
+    physics: {
+      default: 'arcade',
+      arcade: {
+        gravity: { x: 0, y: 0 },
+        debug: false,
+      },
     },
-  },
-  scale: {
-    mode: Phaser.Scale.FIT,
-    autoCenter: Phaser.Scale.CENTER_BOTH,
-  },
-  scene: [BootScene, WorldScene],
-};
+    scale: {
+      mode: Phaser.Scale.FIT,
+      autoCenter: Phaser.Scale.CENTER_BOTH,
+    },
+    scene: [BootScene, WorldScene],
+  };
 
-new Phaser.Game(config);
+  phaserGame = new Phaser.Game(config);
+}
 
+// Render React UI immediately (AuthGuard will show login if needed)
 const uiRoot = document.getElementById('ui-root');
 if (uiRoot) {
-  ReactDOM.createRoot(uiRoot).render(React.createElement(App));
+  ReactDOM.createRoot(uiRoot).render(
+    React.createElement(AuthGuard, null, React.createElement(App))
+  );
+}
+
+// If no Supabase configured, start Phaser immediately (offline-only mode)
+if (!supabase) {
+  startPhaserGame();
+} else {
+  // Subscribe to auth state: start Phaser after user authenticates
+  const unsubscribe = useAuthStore.subscribe((state, prevState) => {
+    if (state.user && !prevState.user) {
+      // User just authenticated: pull cloud data then start game
+      pullFromCloud().then(() => {
+        startPhaserGame();
+      });
+    }
+  });
+
+  // Also handle case where session is already restored on page load
+  useAuthStore.getState().initialize().then(() => {
+    const { user } = useAuthStore.getState();
+    if (user) {
+      pullFromCloud().then(() => {
+        startPhaserGame();
+      });
+    }
+  });
 }

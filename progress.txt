@@ -2,7 +2,76 @@ SYSTEM DESIGN GAME - PROGRESS TRACKER
 ======================================
 Last updated: 2026-02-12
 
-PROJECT STATUS: Ch2-3 Implemented + Chapter Progression + Reactive World + Bug Fixes + Chibi Tech Sprites
+PROJECT STATUS: Supabase Auth + Cloud Sync + Ch2 Bug Fixes
+
+SUPABASE INTEGRATION - USER PROGRESS STORAGE (2026-02-12)
+------------------------------------------------------
+
+AUTH SYSTEM [COMPLETE]
+- Supabase client init (src/lib/supabase.ts): reads VITE_SUPABASE_URL + VITE_SUPABASE_ANON_KEY, exports null if missing
+- Zustand auth store (src/auth/AuthStore.ts): signUp, signIn, signOut, initialize with onAuthStateChange
+- signOut clears all game localStorage keys (completed-chapters, puzzle-best-grade-*) to prevent data leakage
+- AuthUI (src/auth/AuthUI.tsx): login/register toggle, email+password form, dark theme matching game aesthetic
+- AuthGuard (src/auth/AuthGuard.tsx): loading spinner -> login screen -> game, falls through if Supabase null
+- Added vite-env.d.ts for Vite client types (import.meta.env)
+
+CLOUD SYNC [COMPLETE]
+- ProgressSync (src/sync/ProgressSync.ts): pullFromCloud, pushToCloud, schedulePush (2s debounce)
+- Pulls on login: overwrites localStorage with cloud data, updates GameStore
+- Pushes after progress changes: completed_chapters, best_grades (per-chapter), current_chapter
+- First-login migration: if no cloud row, pushes local data up
+- All methods no-op gracefully if supabase is null or user is null
+
+ENTRY POINT RESTRUCTURE [COMPLETE]
+- main.ts: Renders AuthGuard > App immediately, Phaser game starts only after auth + cloud pull
+- Offline-only mode: if no VITE_SUPABASE_URL, Phaser starts immediately and auth is skipped
+- Subscribe to auth store: on user change, pullFromCloud then start Phaser
+
+EXISTING FILES MODIFIED [COMPLETE]
+- GameStore.ts: exported CHAPTER_ORDER, added schedulePush() in markChapterCompleted, derive currentChapter from localStorage
+- App.tsx: added schedulePush after grade save, sign-out button (top-right), user email display during exploring
+- GradeDisplay.tsx: fixed puzzle-best-grade key bug (was missing chapter ID), added schedulePush after grade save
+
+NEW FILES CREATED:
+- src/lib/supabase.ts, src/auth/AuthStore.ts, src/auth/AuthUI.tsx, src/auth/AuthGuard.tsx
+- src/sync/ProgressSync.ts, src/vite-env.d.ts, .env.example, .gitignore
+
+CHAPTER 2 BUG FIXES (2026-02-12)
+------------------------------------------------------
+
+BUG: WebServerNode missing source handle [FIXED]
+- WebServerNode.tsx only had target handle (left side) - no source handle for downstream connections
+- Ch2 requires web servers to connect to cache nodes, which was impossible
+- Fix: added Handle type="source" position={Position.Right} to WebServerNode
+
+BUG: CacheNode TTL not editable [FIXED]
+- TTL was displayed as static text, no way for player to adjust it
+- TTL is a core gameplay mechanic for the caching chapter
+- Fix: replaced static TTL display with number input (1-300s range), updates node data
+
+BUG: GradeDisplay hardcoded Ch1 metrics [FIXED]
+- MetricRows showed throughput >= 10000, error_rate <= 5, p99 <= 200, cost <= 800 for ALL chapters
+- Ch2 uses cache_hit_rate, staleness_rate, etc. as objectives - none were shown
+- Fix: GradeDisplay now dynamically builds metrics from puzzle objectives (bronze/silver/gold conditions)
+- Added helper functions: getMetricValue, formatMetric, checkCondition, METRIC_LABELS map
+- Fallback to basic metrics if no puzzle data available
+
+BUG: GameStore currentChapter not restored from localStorage [FIXED]
+- On page reload, currentChapter always reset to 01-load-balancing even if chapters were completed
+- Fix: added deriveCurrentChapter() that finds first uncompleted chapter from CHAPTER_ORDER
+
+SUPABASE SQL SCHEMA (run manually in Supabase SQL Editor):
+- CREATE TABLE user_progress (id UUID PK, user_id UUID FK, completed_chapters TEXT[], best_grades JSONB, current_chapter TEXT, updated_at TIMESTAMPTZ)
+- RLS policy: users can only CRUD their own progress row
+- Enable email auth provider in Supabase dashboard
+
+NEXT STEPS:
+- Create Supabase project and run SQL schema
+- Set VITE_SUPABASE_URL and VITE_SUPABASE_ANON_KEY in .env
+- End-to-end test: register, play Ch1, complete, play Ch2 with cache, sign out, sign back in
+- Chapters 4-6 still need implementation (API Design, Rate Limiting, Message Queues)
+
+------------------------------------------------------
 
 CHAPTERS 2-3 IMPLEMENTATION (2026-02-12)
 ------------------------------------------------------
