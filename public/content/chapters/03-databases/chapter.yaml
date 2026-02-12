@@ -1,0 +1,6 @@
+id: 03-databases
+title: "The Database Bottleneck"
+description: "The primary database is maxed out. Read traffic is overwhelming it even with caching. Time to scale the data layer with read replicas."
+npc: sarah-the-sre
+puzzles:
+  - scale-reads-with-replicas

@@ -1,0 +1,97 @@
+id: sarah-intro
+startNode: greeting
+
+nodes:
+  greeting:
+    id: greeting
+    speaker: Sarah
+    text: >
+      Hey! You must be the new engineer. I'm Sarah, the SRE on call tonight.
+      We've got a serious problem -- our main web server is completely overloaded.
+    next: explain-problem
+
+  explain-problem:
+    id: explain-problem
+    speaker: Sarah
+    text: >
+      We're getting 10,000 requests per second at peak, but our single server
+      can only handle about 2,000 before it starts dropping requests and
+      latency goes through the roof. Users are furious.
+    choices:
+      - text: How does a load balancer work?
+        next: explain-lb
+      - text: What algorithms exist?
+        next: explain-algorithms
+      - text: Let me try fixing it!
+        next: start-puzzle
+        action: start-puzzle
+
+  explain-lb:
+    id: explain-lb
+    speaker: Sarah
+    text: >
+      A load balancer sits between your clients and your servers. Instead of
+      all traffic hitting one server, the load balancer distributes requests
+      across multiple servers. Think of it like having multiple checkout
+      lanes at a grocery store instead of just one.
+    choices:
+      - text: What algorithms exist?
+        next: explain-algorithms
+      - text: Let me try fixing it!
+        next: start-puzzle
+        action: start-puzzle
+
+  explain-algorithms:
+    id: explain-algorithms
+    speaker: Sarah
+    text: >
+      The two most common are Round Robin and Least Connections. Round Robin
+      just cycles through servers one by one -- simple but fair. Least
+      Connections sends each new request to whichever server currently has
+      the fewest active requests -- smarter but slightly more overhead.
+    choices:
+      - text: How does a load balancer work?
+        next: explain-lb
+      - text: Got it. Let me try fixing it!
+        next: start-puzzle
+        action: start-puzzle
+
+  start-puzzle:
+    id: start-puzzle
+    speaker: Sarah
+    text: >
+      Great! I'll give you access to the system diagram. Add a load balancer
+      and enough servers to handle the traffic. Hit Deploy when you're ready
+      to test it live. Good luck!
+    action: start-puzzle
+
+  post-completion:
+    id: post-completion
+    speaker: Sarah
+    text: >
+      Great work! You just implemented horizontal scaling with load balancing.
+      This is one of the most fundamental patterns in system design -- when one
+      server isn't enough, add more and distribute the load. Most major websites
+      use exactly this approach.
+    choices:
+      - text: What else can I learn?
+        next: tease-next
+      - text: Thanks, Sarah!
+        next: goodbye
+        action: end
+
+  tease-next:
+    id: tease-next
+    speaker: Sarah
+    text: >
+      There's a lot more to explore. What happens when a server crashes mid-request?
+      How do you handle sessions? What about caching? But one thing at a time --
+      you've earned a break. Come back when you're ready for the next challenge.
+    action: end
+
+  goodbye:
+    id: goodbye
+    speaker: Sarah
+    text: >
+      See you around! The server room is always here if you want to practice.
+    action: end

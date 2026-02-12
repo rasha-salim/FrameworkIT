@@ -1,0 +1,91 @@
+id: senior-engineer-intro
+nodes:
+  start:
+    id: start
+    speaker: Marcus
+    text: "Hey, new engineer! I'm Marcus, the senior engineer on the platform team. We've got a performance issue I could use your help with."
+    choices:
+      - text: "What's going on?"
+        next: explain_problem
+      - text: "Sure, what do you need?"
+        next: explain_problem
+
+  explain_problem:
+    id: explain_problem
+    speaker: Marcus
+    text: "Our monitoring dashboard is painfully slow. Every single page load fires the same database queries. We're seeing 800ms+ load times and the DB is struggling under the load."
+    choices:
+      - text: "Can't we just add more database capacity?"
+        next: more_db
+      - text: "Sounds like we need caching."
+        next: caching_yes
+
+  more_db:
+    id: more_db
+    speaker: Marcus
+    text: "We could, but that's expensive and doesn't solve the root problem. Most of these queries return the same data - it only changes every few minutes. We're doing redundant work."
+    choices:
+      - text: "So we should cache the results?"
+        next: caching_yes
+      - text: "How often does the data change?"
+        next: data_freshness
+
+  data_freshness:
+    id: data_freshness
+    speaker: Marcus
+    text: "The dashboard metrics update roughly every 30 seconds, but most users reload every 5-10 seconds. That's a lot of identical queries hitting the DB."
+    next: caching_yes
+
+  caching_yes:
+    id: caching_yes
+    speaker: Marcus
+    text: "Exactly. A cache sits between our servers and the database. For read-heavy workloads like this, it can serve responses in milliseconds instead of waiting for DB queries."
+    choices:
+      - text: "What about stale data?"
+        next: stale_data
+      - text: "Let me try setting it up!"
+        next: start_puzzle
+
+  stale_data:
+    id: stale_data
+    speaker: Marcus
+    text: "Good question! We use TTL - Time To Live. Each cached entry expires after a set time. Too short and you lose the benefit. Too long and users see outdated data. There's also the eviction policy - what happens when the cache is full."
+    choices:
+      - text: "What eviction policies are there?"
+        next: eviction_policies
+      - text: "I think I understand. Let me try!"
+        next: start_puzzle
+
+  eviction_policies:
+    id: eviction_policies
+    speaker: Marcus
+    text: "LRU removes the least recently accessed item. LFU removes the least frequently accessed. FIFO just removes the oldest. For our dashboard, LRU usually works best since recent data is most likely to be requested again."
+    next: start_puzzle
+
+  start_puzzle:
+    id: start_puzzle
+    speaker: Marcus
+    text: "Here's our current setup. Add a cache layer between the web servers and the database. You'll need to choose the right strategy, TTL, and eviction policy. Good luck!"
+    action: startPuzzle
+
+  post_complete:
+    id: post_complete
+    speaker: Marcus
+    text: "Nice work! See how much faster the dashboard is now? Caching is one of the most powerful tools in system design. Just remember - cache invalidation is one of the two hardest problems in computer science."
+    choices:
+      - text: "What's the other one?"
+        next: joke
+      - text: "Thanks, Marcus!"
+        next: end
+
+  joke:
+    id: joke
+    speaker: Marcus
+    text: "Naming things. And off-by-one errors. Anyway, great job. The dashboard team will be thrilled."
+    next: end
+
+  end:
+    id: end
+    speaker: Marcus
+    text: "Keep it up. I have a feeling the database team is going to need your help next..."
+startNode: start

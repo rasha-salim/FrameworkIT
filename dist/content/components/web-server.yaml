@@ -1,0 +1,9 @@
+id: web-server
+name: Web Server
+description: Processes HTTP requests up to its capacity limit
+category: compute
+
+defaults:
+  maxRPS: 2000
+  baseLatencyMs: 20
+  overloadLatencyMultiplier: 3

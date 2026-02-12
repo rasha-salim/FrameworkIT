@@ -1,0 +1,103 @@
+id: scale-reads-with-replicas
+title: "Scale Reads with Replicas"
+chapter: 03-databases
+difficulty: 4
+
+briefing:
+  npc: sarah-the-sre
+  text: "The primary database is maxed out even with caching. Our read-heavy workload is overwhelming it. We need to add read replicas to distribute the load, but watch out for replication lag and stale reads."
+
+fixedComponents:
+  - id: client-pool
+    type: client-pool
+    position: { x: 50, y: 250 }
+    config:
+      requestsPerSecond: 8000
+      distribution: uniform
+      readWriteRatio: 0.85
+  - id: lb-1
+    type: load-balancer
+    position: { x: 250, y: 250 }
+    config:
+      algorithm: round-robin
+  - id: web-1
+    type: web-server
+    position: { x: 450, y: 150 }
+    config:
+      maxRPS: 4000
+      baseLatencyMs: 8
+  - id: web-2
+    type: web-server
+    position: { x: 450, y: 350 }
+    config:
+      maxRPS: 4000
+      baseLatencyMs: 8
+  - id: cache-1
+    type: cache
+    position: { x: 650, y: 250 }
+    config:
+      strategy: cache-aside
+      ttlSeconds: 30
+      maxEntries: 5000
+      evictionPolicy: lru
+  - id: primary-db
+    type: database
+    position: { x: 850, y: 250 }
+    config:
+      maxRPS: 1000
+      readLatencyMs: 40
+      writeLatencyMs: 80
+      maxConnections: 150
+
+availableComponents:
+  - type: read-replica
+    maxCount: 4
+    costPerUnit: 300
+  - type: load-balancer
+    maxCount: 1
+    costPerUnit: 100
+
+objectives:
+  bronze:
+    - metric: throughput
+      operator: ">="
+      value: 6000
+    - metric: error_rate
+      operator: "<="
+      value: 5
+    - metric: p99_latency
+      operator: "<="
+      value: 400
+  silver:
+    - metric: throughput
+      operator: ">="
+      value: 7000
+    - metric: error_rate
+      operator: "<="
+      value: 2
+    - metric: p99_latency
+      operator: "<="
+      value: 250
+    - metric: replication_lag
+      operator: "<="
+      value: 200
+  gold:
+    - metric: throughput
+      operator: ">="
+      value: 7500
+    - metric: error_rate
+      operator: "<="
+      value: 1
+    - metric: p99_latency
+      operator: "<="
+      value: 150
+    - metric: replication_lag
+      operator: "<="
+      value: 100
+    - metric: total_cost
+      operator: "<="
+      value: 1500
+
+simulation:
+  durationSeconds: 60
+  tickRateMs: 100

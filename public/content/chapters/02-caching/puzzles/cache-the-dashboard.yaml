@@ -1,0 +1,92 @@
+id: cache-the-dashboard
+title: "Cache the Dashboard"
+chapter: 02-caching
+difficulty: 3
+
+briefing:
+  npc: the-senior-engineer
+  text: "The monitoring dashboard loads the same data every time someone views it. We're hammering the database with identical queries. Add a caching layer to reduce DB load and speed up response times."
+
+fixedComponents:
+  - id: client-pool
+    type: client-pool
+    position: { x: 50, y: 200 }
+    config:
+      requestsPerSecond: 5000
+      distribution: uniform
+      readWriteRatio: 0.9
+  - id: lb-1
+    type: load-balancer
+    position: { x: 250, y: 200 }
+    config:
+      algorithm: round-robin
+  - id: web-1
+    type: web-server
+    position: { x: 450, y: 100 }
+    config:
+      maxRPS: 3000
+      baseLatencyMs: 10
+  - id: web-2
+    type: web-server
+    position: { x: 450, y: 300 }
+    config:
+      maxRPS: 3000
+      baseLatencyMs: 10
+  - id: database-1
+    type: database
+    position: { x: 850, y: 200 }
+    config:
+      maxRPS: 800
+      readLatencyMs: 50
+      writeLatencyMs: 100
+      maxConnections: 100
+
+availableComponents:
+  - type: cache
+    maxCount: 2
+    costPerUnit: 200
+
+objectives:
+  bronze:
+    - metric: cache_hit_rate
+      operator: ">="
+      value: 50
+    - metric: error_rate
+      operator: "<="
+      value: 5
+    - metric: p99_latency
+      operator: "<="
+      value: 300
+  silver:
+    - metric: cache_hit_rate
+      operator: ">="
+      value: 70
+    - metric: error_rate
+      operator: "<="
+      value: 2
+    - metric: p99_latency
+      operator: "<="
+      value: 200
+    - metric: staleness_rate
+      operator: "<="
+      value: 10
+  gold:
+    - metric: cache_hit_rate
+      operator: ">="
+      value: 85
+    - metric: error_rate
+      operator: "<="
+      value: 1
+    - metric: p99_latency
+      operator: "<="
+      value: 100
+    - metric: staleness_rate
+      operator: "<="
+      value: 5
+    - metric: total_cost
+      operator: "<="
+      value: 1000
+
+simulation:
+  durationSeconds: 60
+  tickRateMs: 100

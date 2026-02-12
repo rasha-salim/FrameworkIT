@@ -1,0 +1,58 @@
+id: lb-001-handle-10k-rps
+title: Handle 10,000 Requests Per Second
+chapter: 01-load-balancing
+difficulty: 2
+
+briefing:
+  npc: sarah-the-sre
+  text: >
+    Our single web server is crashing under load. 10,000 req/s peak,
+    but one server handles 2,000 max. Design a system that handles it all
+    with p99 latency under 200ms.
+
+fixedComponents:
+  - id: client-pool
+    type: client-pool
+    position:
+      x: 50
+      y: 300
+    config:
+      requestsPerSecond: 10000
+      distribution: uniform
+  - id: existing-server
+    type: web-server
+    position:
+      x: 600
+      y: 300
+    config:
+      maxRPS: 2000
+      baseLatencyMs: 20
+
+availableComponents:
+  - type: load-balancer
+    maxCount: 2
+    costPerUnit: 150
+  - type: web-server
+    maxCount: 8
+    costPerUnit: 100
+
+objectives:
+  bronze:
+    - metric: throughput
+      operator: ">="
+      value: 10000
+    - metric: error_rate
+      operator: "<="
+      value: 5
+  silver:
+    - metric: p99_latency
+      operator: "<="
+      value: 200
+  gold:
+    - metric: total_cost
+      operator: "<="
+      value: 800
+
+simulation:
+  durationSeconds: 60
+  tickRateMs: 100

@@ -1,0 +1,6 @@
+id: 02-caching
+title: "The Slow Dashboard"
+description: "The monitoring dashboard is crawling. Every page load hammers the database with the same queries. Time to add a caching layer."
+npc: the-senior-engineer
+puzzles:
+  - cache-the-dashboard

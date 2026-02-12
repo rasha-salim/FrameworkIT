@@ -1,0 +1,157 @@
+SYSTEM DESIGN GAME - PROGRESS TRACKER
+======================================
+Last updated: 2026-02-12
+
+PROJECT STATUS: Chapters 2 (Caching) & 3 (Databases) Implemented
+
+CHAPTERS 2-3 IMPLEMENTATION (2026-02-12)
+------------------------------------------------------
+
+INFRASTRUCTURE EXTENSIONS [COMPLETE]
+- Extended SimRequest with requestType (read/write), cached, stale, cacheKey fields
+- Extended ComponentConfig with cache config (strategy, ttlSeconds, maxEntries, evictionPolicy)
+- Extended ComponentConfig with DB config (readLatencyMs, writeLatencyMs, maxConnections, readWriteRatio, replicationLagMs)
+- Extended SimulationMetrics with cacheHitRate, stalenessRate, cacheEvictions, dbReadThroughput, dbWriteThroughput, replicationLag
+- Extended PuzzleValidator with 6 new metric cases
+- Updated ClientPool to support readWriteRatio for generating read vs write requests
+
+CHAPTER 2: CACHING - "The Slow Dashboard" [COMPLETE]
+- CacheComponent (Cache.ts): cache-aside/write-through strategies, LRU/LFU/FIFO eviction, TTL-based expiry
+- CacheNode (CacheNode.tsx): amber themed, strategy + eviction dropdowns, hit rate gauge, TTL/size display
+- Puzzle: cache-the-dashboard.yaml (difficulty 3, 5 fixed components, add up to 2 caches)
+- Objectives: bronze (50% hit rate), silver (70% hit, <=10% stale), gold (85% hit, <=5% stale, <=$1000)
+- NPC Marcus dialogue: senior-engineer-intro.yaml (9 nodes, explains caching concepts, cache invalidation joke)
+- Chapter YAML: 02-caching/chapter.yaml
+
+CHAPTER 3: DATABASES - "The Database Bottleneck" [COMPLETE]
+- DatabaseComponent (Database.ts): R/W support, connection pool, load-based latency scaling
+- ReadReplicaComponent (ReadReplica.ts): read-only, replication lag, staleness probability
+- DatabaseNode (DatabaseNode.tsx): teal themed, R/W badge, connection pool bar, read/write counters
+- ReadReplicaNode (ReadReplicaNode.tsx): dashed border, R/O badge, lag indicator, load bar
+- Puzzle: scale-reads-with-replicas.yaml (difficulty 4, 6 fixed components incl. cache, add up to 4 replicas + LB)
+- Objectives: bronze (6000 throughput), silver (7000, <=200ms lag), gold (7500, <=100ms lag, <=$1500)
+- NPC Sarah dialogue: sarah-db-intro.yaml (9 nodes, explains read replicas, replication lag trade-offs)
+- Chapter YAML: 03-databases/chapter.yaml
+
+INTEGRATION UPDATES [COMPLETE]
+- PuzzleSimulator: added cache/database/read-replica to buildComponents, recursive processComponent routing
+- PuzzleSimulator: cache hit/miss routing (hits returned, misses forwarded downstream)
+- PuzzleSimulator: final metrics calculation includes cache/database stats
+- PuzzleSimulator: updateNodeVisuals includes cache hitRate, DB connections, replica lag
+- PuzzleWorkspace: registered 3 new nodeTypes (cache, database, read-replica)
+- PuzzleWorkspace: added getComponentLabel function for proper node labels
+- ComponentPalette: added cache/database/read-replica palette items with proper defaults and x-positions
+- MetricsDashboard: conditionally shows cache hit rate, staleness, DB reads, replication lag
+- PuzzleStore: resetPuzzle uses labelMap for all component types
+
+NEXT STEPS:
+- World scene needs Marcus NPC for Ch2 and Ch2/Ch3 level transitions
+- Chapters 4-6 still need implementation (API Design, Rate Limiting, Message Queues)
+- Polish: end-to-end testing of Ch2 and Ch3 game loops
+
+------------------------------------------------------
+
+CHAPTERS 2-6 MASTER PLAN (2026-02-12)
+- Created comprehensive design document: CHAPTERS_2-6_MASTER_PLAN.md
+- Two-agent team produced specs: Senior System Design Engineer + Game UI/VFX Developer
+- 5 new chapters, 10 puzzles, 8 new simulation components, 15 new React Flow nodes
+- Chapters: Caching, Databases, API Design, Rate Limiting, Message Queues
+- Difficulty progression: 2 (Ch1) -> 3-4 (Ch2) -> 4-5 (Ch3) -> 5-6 (Ch4) -> 6-7 (Ch5) -> 7-8 (Ch6)
+- Full YAML puzzle specs, simulation component designs, visual/animation specs, accessibility standards
+- Implementation phases defined (Infrastructure -> Ch2 -> Ch3 -> Ch4 -> Ch5 -> Ch6 -> Polish)
+------------------------------------------------------
+
+Previous: Prototype Complete (All 6 Phases Done) + Bug Fix
+
+BUG FIX: Congratulations shown on failure (2026-02-11)
+- GradeDisplay.tsx was setting puzzleCompleted(true) regardless of grade
+- Fixed: only sets puzzleCompleted(true) when grade >= bronze
+- Added safety net in App.tsx: useEffect watches results->exploring transition and verifies grade
+- Added usePolling to vite.config.ts for Windows filesystem compatibility
+- Verified: failing (80% error rate) now correctly shows "Failed", no congratulations dialogue
+------------------------------------------------------
+
+PHASE 1: Project Scaffolding [COMPLETE]
+- Created project with Vite + React + TypeScript
+- Installed dependencies: phaser, @xyflow/react, zustand, js-yaml
+- Set up dual-container HTML (#game-container for Phaser, #ui-root for React)
+- Created typed EventBus (Phaser <-> React bridge)
+- Created GameStore (Zustand): phase, currentChapter, currentPuzzleId
+- Created App.tsx root React component with phase-based rendering
+- Created shared TypeScript types (types/index.ts)
+
+PHASE 2: World Scene [COMPLETE]
+- BootScene: generates placeholder sprites as colored rectangles
+- WorldScene: dark server room with ceiling lights, floor, server rack with red glow
+- Player: white rectangle, arrow key movement, world bounds
+- NPC (Sarah): green rectangle, name label, "[E] Talk" proximity prompt
+- Interaction: overlap detection, E key fires npc:interact event
+
+PHASE 3: Dialogue System [COMPLETE]
+- DialogueStore (Zustand): active, dialogueData, currentNode, history
+- DialogueEngine: loads YAML dialogue trees, handles branching choices and actions
+- DialogueUI (React): bottom 40% overlay, typewriter effect (25ms/char), choice buttons
+- YAML dialogue for Sarah: greeting, problem explanation, branching choices, puzzle trigger
+- Post-completion dialogue: Sarah congratulates player after puzzle is solved
+
+PHASE 4: Puzzle Workspace [COMPLETE]
+- PuzzleStore (Zustand): nodes, edges, simulationState, componentCounts
+- PuzzleWorkspace: full-screen React component with top bar, palette, React Flow canvas, metrics
+- ComponentPalette: draggable component buttons with count tracking and cost display
+- Custom React Flow nodes:
+  - ClientPoolNode (blue): shows req/s, source handle
+  - LoadBalancerNode (purple): algorithm dropdown (Round Robin/Least Connections), handles
+  - WebServerNode (green): capacity display, load bar, health indicator, target handle
+- Puzzle YAML loader: fixedComponents, availableComponents, objectives, simulation config
+- MetricsDashboard: live throughput, P99 latency, error rate, progress bar
+
+PHASE 5: Simulation Engine [COMPLETE]
+- PuzzleSimulator: static class, runs 600 ticks via requestAnimationFrame
+- Simulation components:
+  - ClientPoolComponent: generates N requests/tick
+  - LoadBalancerComponent: round-robin or least-connections distribution
+  - WebServerComponent: capacity-based processing, latency scaling, drop excess
+- Graph validation: checks client pool exists and has connections
+- PuzzleValidator: evaluates results against YAML objectives (bronze/silver/gold)
+- GradeDisplay: results overlay with grade badge, metrics breakdown, Try Again/Back to World
+
+PHASE 6: Polish & Loop Closure [COMPLETE]
+- Auto-transition from simulation completion to results phase (useEffect in PuzzleWorkspace)
+- Back to World flow: returns to exploring phase with updated HUD
+- Post-completion dialogue: Sarah has different dialogue after puzzle is solved
+- HUD shows chapter name, objective text, and best grade (localStorage persistence)
+- Error states: deploying with no connections shows failed simulation with 100% error rate
+
+FULL GAME LOOP VERIFIED END-TO-END:
+1. Explore world -> Walk to Sarah -> [E] Talk
+2. Dialogue with branching choices -> "Let me try fixing it!"
+3. Puzzle workspace -> Add LB + servers -> Connect edges -> Deploy
+4. Live simulation with metrics -> Auto-transition to results
+5. Gold grade display (10,000/s throughput, 62ms P99, 0% error, $550 cost) -> Back to World
+6. Post-completion dialogue with Sarah -> "Great work! You just implemented horizontal scaling..."
+
+FILES CREATED/MODIFIED (full list):
+- package.json, tsconfig.json, vite.config.ts, index.html
+- src/main.ts
+- src/types/index.ts (extended for Ch2-3)
+- src/core/EventBus.ts, GameStore.ts, ContentLoader.ts
+- src/scenes/BootScene.ts, WorldScene.ts
+- src/world/Player.ts, NPC.ts
+- src/dialogue/DialogueEngine.ts, DialogueStore.ts, DialogueUI.tsx
+- src/puzzle/PuzzleStore.ts (updated label mapping), PuzzleWorkspace.tsx (new nodeTypes), PuzzleSimulator.ts (recursive routing)
+- src/puzzle/PuzzleValidator.ts (new metrics), ComponentPalette.tsx (new items), MetricsDashboard.tsx (conditional metrics), GradeDisplay.tsx
+- src/puzzle/nodes/ClientPoolNode.tsx, LoadBalancerNode.tsx, WebServerNode.tsx
+- src/puzzle/nodes/CacheNode.tsx, DatabaseNode.tsx, ReadReplicaNode.tsx [NEW Ch2-3]
+- src/puzzle/components/types.ts (extended), ClientPool.ts (readWriteRatio), LoadBalancer.ts, WebServer.ts
+- src/puzzle/components/Cache.ts, Database.ts, ReadReplica.ts [NEW Ch2-3]
+- src/ui/App.tsx
+- public/content/chapters/01-load-balancing/chapter.yaml
+- public/content/chapters/01-load-balancing/dialogues/sarah-intro.yaml
+- public/content/chapters/01-load-balancing/puzzles/handle-10k-rps.yaml
+- public/content/chapters/02-caching/chapter.yaml [NEW]
+- public/content/chapters/02-caching/dialogues/senior-engineer-intro.yaml [NEW]
+- public/content/chapters/02-caching/puzzles/cache-the-dashboard.yaml [NEW]
+- public/content/chapters/03-databases/chapter.yaml [NEW]
+- public/content/chapters/03-databases/dialogues/sarah-db-intro.yaml [NEW]
+- public/content/chapters/03-databases/puzzles/scale-reads-with-replicas.yaml [NEW]
+- public/content/components/load-balancer.yaml, web-server.yaml

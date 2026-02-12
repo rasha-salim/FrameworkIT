@@ -1,0 +1,8 @@
+id: 01-load-balancing
+title: The Overloaded Server
+description: >
+  Learn the fundamentals of load balancing by helping Sarah fix an
+  overloaded web server that can't handle peak traffic.
+npc: sarah-the-sre
+puzzles:
+  - handle-10k-rps

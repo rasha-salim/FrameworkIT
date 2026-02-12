@@ -1,0 +1,159 @@
+SYSTEM DESIGN GAME - LEARNINGS
+===============================
+Last updated: 2026-02-10
+
+1. VITE + WSL2 FILE WATCHER ISSUE
+----------------------------------
+Problem: Vite's HMR on WSL2 frequently fails to detect file changes, especially
+for files that haven't been recently loaded or modified through the WSL filesystem layer.
+Symptoms: Source file on disk is correct, but Vite serves a stale cached version.
+Clearing node_modules/.vite and restarting the server does NOT always fix this.
+
+What we tried (failed):
+- Killing and restarting Vite dev server
+- Clearing node_modules/.vite cache
+- Using cp/mv to force filesystem events
+- Full page reloads in browser
+
+What works:
+- Move reactive logic into React components as useEffect hooks rather than
+  imperative calls in non-React modules. React components (.tsx files) get
+  reliably hot-reloaded.
+- Example: simulation-to-results phase transition was moved from PuzzleSimulator.ts
+  (static class method) to PuzzleWorkspace.tsx (React useEffect watching
+  simulationState.completed). This is also architecturally cleaner.
+
+Takeaway: On WSL2, prefer React-driven state transitions over imperative calls
+in utility classes when possible.
+
+
+2. WINDOW STORE EXPOSURE FOR DEV TESTING
+-----------------------------------------
+Problem: Needed to expose Zustand stores to browser console for debugging/testing.
+
+What we tried (failed):
+- Module-level side effects: `window.__STORE__ = store` at bottom of PuzzleStore.ts
+  -> Vite's module loading didn't execute the side effect reliably
+- Eager import in main.ts: `import './puzzle/PuzzleStore'`
+  -> Same issue, side effect not guaranteed
+
+What works:
+- useEffect in a React component (PuzzleWorkspace.tsx) to set window globals
+  -> Works but pollutes production code, should be removed before shipping
+- Dynamic imports from browser console: `await import('/src/puzzle/PuzzleStore.ts')`
+  -> Always works for ad-hoc debugging, no code changes needed
+
+Takeaway: For dev debugging, use dynamic imports from the console rather than
+baking window globals into source code.
+
+
+3. PLAYWRIGHT + PHASER CANVAS TESTING
+--------------------------------------
+Problem: Automating browser tests for a Phaser game inside a canvas element.
+
+Key findings:
+- Canvas needs explicit focus before keyboard events work:
+  `page.evaluate(() => document.querySelector('canvas').focus())`
+- Use page.keyboard for key events after focusing canvas
+- requestAnimationFrame is throttled when page is not focused or during
+  waitForTimeout — this makes simulation run slower than expected in tests
+- Fix: use shorter wait intervals and poll for completion state
+
+Dialogue testing tips:
+- First click on dialogue overlay skips the typewriter animation
+- Second click advances to next dialogue node
+- Click directly on dialogue refs, not on body (dialogue only covers bottom 40%)
+- Wait adequate time (3-4s) for typewriter to finish before expecting choices
+
+
+4. REACT FLOW (@xyflow/react) INTEGRATION
+------------------------------------------
+- Custom node types must be registered via useMemo to avoid re-renders
+- nodeTypes object must be stable (not recreated each render)
+- Edges can be created programmatically via store.setEdges([...])
+- Edge connections work naturally with Handle components (source/target)
+- proOptions={{ hideAttribution: true }} removes the React Flow watermark
+- Disable editing during simulation by returning early from onChange handlers
+
+
+5. PHASER + REACT CO-EXISTENCE
+-------------------------------
+- Two sibling divs: #game-container (z-index 0) and #ui-root (z-index 10)
+- React root uses pointer-events: none by default, individual overlays set pointer-events: auto
+- Zustand stores are the bridge — Phaser writes, React reads (and vice versa)
+- EventBus handles one-shot events (npc:interact, dialogue:start-puzzle, etc.)
+- Game phase in Zustand controls which React overlay is visible
+- When in dialogue/puzzle phase, Phaser input should be disabled
+
+
+6. ZUSTAND STATE MANAGEMENT PATTERNS
+--------------------------------------
+- getState() works outside React components (e.g., in PuzzleSimulator class)
+- Store subscriptions in useEffect clean up automatically with React
+- Derived state (componentCounts) should be computed in setters, not selectors
+- resetPuzzle rebuilds from puzzleData.fixedComponents — keep puzzleData in store
+
+
+7. YAML-DRIVEN CONTENT ARCHITECTURE
+-------------------------------------
+- Dialogues: node-based trees with speaker, text, choices, actions
+- Puzzles: fixedComponents, availableComponents, objectives (bronze/silver/gold), simulation config
+- ContentLoader caches fetched YAML to avoid re-parsing
+- js-yaml handles all parsing; fetch from public/ directory
+- Easy to add new puzzles/chapters without code changes
+
+
+8. SIMULATION ENGINE DESIGN
+-----------------------------
+- Discrete-event simulation: 600 ticks (60s at 100ms/tick)
+- requestAnimationFrame for tick scheduling (visible progress, non-blocking)
+- Components are stateful classes (ClientPool, LoadBalancer, WebServer)
+- Graph topology from React Flow edges determines request routing
+- Metrics collected per-tick, final metrics computed from all latencies
+- Grading: compare metrics against YAML-defined thresholds
+
+
+9. PORT MANAGEMENT ON DEV SERVER
+---------------------------------
+- Multiple Vite restarts can leave zombie processes occupying ports
+- Always kill existing processes on target port before starting:
+  `lsof -ti :5173 | xargs kill`
+- pkill -f "vite" cleans up all Vite instances
+- Vite auto-increments port if occupied (3000, 3001, 3002...) which can be confusing
+
+
+10. VITE CACHING ON WINDOWS FILESYSTEM
+----------------------------------------
+- When developing on Windows (or WSL2 accessing Windows paths like /mnt/c/...),
+  Vite caches compiled module transforms in memory and in node_modules/.vite
+- Editing files may NOT trigger re-compilation even after:
+  - Clearing node_modules/.vite
+  - Restarting the dev server
+  - Touching/copying files
+- Root cause: Windows filesystem doesn't emit the inotify events Vite expects
+- Fixes that work:
+  1. Add `watch: { usePolling: true }` to vite.config.ts server options
+  2. Run `npm install` to refresh all file timestamps (nuclear but reliable)
+  3. Move logic into React components (useEffect) instead of utility classes —
+     .tsx files that are already in the module graph get reloaded more reliably
+- Fix that does NOT reliably work: rm + recreate file, cp/mv, touch
+
+
+11. GRADE-CONDITIONAL GAME STATE
+---------------------------------
+- Never set puzzleCompleted(true) unconditionally after simulation
+- Check the actual grade: only mark completed if grade >= bronze
+- Use useEffect with prevPhase ref pattern to intercept phase transitions
+  and verify state before it takes effect
+- localStorage persistence should also be grade-gated (don't save "none")
+
+
+12. TECH STACK ISRAEL-CONNECTION NOTES
+---------------------------------------
+- TypeScript: Microsoft has Israel R&D, but TS dev is Redmond-led. User should verify.
+- Phaser: Photon Storm, UK — no Israel connection
+- React: Meta, US — no Israel connection
+- React Flow: xyflow, Germany — no Israel connection
+- Zustand: Poimandres, Germany — no Israel connection
+- Vite: Evan You, independent — no Israel connection
+- js-yaml: open source, no known Israel connection

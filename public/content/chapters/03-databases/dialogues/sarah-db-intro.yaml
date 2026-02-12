@@ -1,0 +1,93 @@
+id: sarah-db-intro
+nodes:
+  start:
+    id: start
+    speaker: Sarah
+    text: "Hey again! Remember the load balancing fix? Well, we've got a new problem. The primary database is getting crushed, even with the caching layer Marcus helped you set up."
+    choices:
+      - text: "What's happening to the database?"
+        next: explain_problem
+      - text: "The cache isn't helping enough?"
+        next: cache_limit
+
+  cache_limit:
+    id: cache_limit
+    speaker: Sarah
+    text: "The cache helps with repeated reads, but we still have tons of cache misses and all writes go straight to the primary. At 8,000 requests per second, the DB connection pool is maxed out."
+    next: explain_problem
+
+  explain_problem:
+    id: explain_problem
+    speaker: Sarah
+    text: "Our workload is about 85% reads and 15% writes. The primary database handles both, but it's hitting its connection limit. We need a way to spread the read load across multiple database instances."
+    choices:
+      - text: "Can we just get a bigger database?"
+        next: vertical_scaling
+      - text: "Read replicas?"
+        next: replicas_yes
+
+  vertical_scaling:
+    id: vertical_scaling
+    speaker: Sarah
+    text: "Vertical scaling hits a ceiling fast, and it's expensive. What we really need is horizontal scaling for reads. That's where read replicas come in - copies of the primary that can serve read queries."
+    next: replicas_yes
+
+  replicas_yes:
+    id: replicas_yes
+    speaker: Sarah
+    text: "Exactly! Read replicas are copies of the primary database that stay in sync through replication. They can handle read queries, which frees up the primary to focus on writes."
+    choices:
+      - text: "What about consistency?"
+        next: consistency
+      - text: "How many do we need?"
+        next: how_many
+
+  consistency:
+    id: consistency
+    speaker: Sarah
+    text: "That's the trade-off. Replicas have replication lag - there's a delay before writes on the primary show up on the replicas. This means some reads might return slightly stale data. You need to balance throughput against consistency."
+    choices:
+      - text: "How do we manage that?"
+        next: manage_lag
+      - text: "Let me try setting it up!"
+        next: start_puzzle
+
+  manage_lag:
+    id: manage_lag
+    speaker: Sarah
+    text: "Keep replication lag low by not overloading replicas. A load balancer in front of the replicas helps distribute reads evenly. For our use case, a small amount of staleness is acceptable - we just need to keep it under control."
+    next: start_puzzle
+
+  how_many:
+    id: how_many
+    speaker: Sarah
+    text: "Depends on the load. More replicas means more read capacity, but also more cost and potentially more replication lag. Start with a couple and see if that's enough to meet our targets."
+    next: start_puzzle
+
+  start_puzzle:
+    id: start_puzzle
+    speaker: Sarah
+    text: "Here's our current architecture with the cache layer. Add read replicas and a load balancer to distribute read traffic. Remember: writes must still go to the primary. Good luck!"
+    action: startPuzzle
+
+  post_complete:
+    id: post_complete
+    speaker: Sarah
+    text: "Great work! You just implemented database read scaling. The primary is breathing easy now, and our read throughput has gone through the roof. This is a pattern used by almost every large-scale system."
+    choices:
+      - text: "What's next?"
+        next: whats_next
+      - text: "Thanks Sarah!"
+        next: end
+
+  whats_next:
+    id: whats_next
+    speaker: Sarah
+    text: "Well, we're growing fast. Soon we'll need to think about API design and rate limiting to protect all this infrastructure we've built. But that's a problem for another day."
+    next: end
+
+  end:
+    id: end
+    speaker: Sarah
+    text: "Keep up the great work. You're becoming a real systems thinker!"
+startNode: start

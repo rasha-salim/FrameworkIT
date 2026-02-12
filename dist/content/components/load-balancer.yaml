@@ -1,0 +1,16 @@
+id: load-balancer
+name: Load Balancer
+description: Distributes incoming traffic across multiple backend servers
+category: networking
+
+algorithms:
+  - id: round-robin
+    name: Round Robin
+    description: Cycles through servers one by one, distributing requests evenly
+  - id: least-connections
+    name: Least Connections
+    description: Sends requests to the server with the fewest active connections
+
+defaults:
+  algorithm: round-robin
+  overheadMs: 2
