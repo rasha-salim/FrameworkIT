@@ -9,6 +9,7 @@ export class BootScene extends Phaser.Scene {
     // Generate placeholder sprites as colored rectangles
     this.createColoredRect('player', 32, 48, 0xffffff);
     this.createColoredRect('npc-sarah', 32, 48, 0x44cc66);
+    this.createColoredRect('npc-marcus', 32, 48, 0x8866cc);
     this.createColoredRect('server-rack', 64, 80, 0x882222);
     this.createColoredRect('server-light', 8, 8, 0xff3333);
   }

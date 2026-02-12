@@ -77,17 +77,28 @@ nodes:
     choices:
       - text: "What's next?"
         next: whats_next
+      - text: "I want to try this puzzle again."
+        next: retry
+        action: startPuzzle
       - text: "Thanks Sarah!"
         next: end
+        action: end
 
   whats_next:
     id: whats_next
     speaker: Sarah
-    text: "Well, we're growing fast. Soon we'll need to think about API design and rate limiting to protect all this infrastructure we've built. But that's a problem for another day."
-    next: end
+    text: "Well, we're growing fast. Soon we'll need to think about API design and rate limiting to protect all this infrastructure we've built. But that's a challenge for another day. For now, you've mastered load balancing, caching, and database scaling. Impressive!"
+    action: end
+
+  retry:
+    id: retry
+    speaker: Sarah
+    text: "Sure! Let me set up the system diagram again."
+    action: startPuzzle
 
   end:
     id: end
     speaker: Sarah
     text: "Keep up the great work. You're becoming a real systems thinker!"
+    action: end
 startNode: start

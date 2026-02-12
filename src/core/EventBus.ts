@@ -6,6 +6,7 @@ interface EventMap {
   'puzzle:completed': [grade: string];
   'puzzle:back-to-world': [];
   'dialogue:ended': [];
+  'chapter:advanced': [];
 }
 
 class TypedEventBus {

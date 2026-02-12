@@ -2,7 +2,7 @@ SYSTEM DESIGN GAME - PROGRESS TRACKER
 ======================================
 Last updated: 2026-02-12
 
-PROJECT STATUS: Chapters 2 (Caching) & 3 (Databases) Implemented
+PROJECT STATUS: Ch2-3 Implemented + Chapter Progression + Reactive World
 
 CHAPTERS 2-3 IMPLEMENTATION (2026-02-12)
 ------------------------------------------------------
@@ -44,10 +44,28 @@ INTEGRATION UPDATES [COMPLETE]
 - MetricsDashboard: conditionally shows cache hit rate, staleness, DB reads, replication lag
 - PuzzleStore: resetPuzzle uses labelMap for all component types
 
+CHAPTER PROGRESSION SYSTEM (2026-02-12) [COMPLETE]
+- GameStore: added completedChapters tracking (localStorage persistence), advanceToNextChapter(), markChapterCompleted()
+- GameStore: CHAPTER_ORDER array defines progression (01->02->03)
+- DialogueEngine: fully rewritten to be chapter-aware with CHAPTER_NPC_MAP (chapter->npc->dialogue+puzzleId)
+- DialogueEngine: handleAction supports startPuzzle (dynamic puzzle IDs), nextChapter (advances chapter), end, legacy start-puzzle
+- DialogueEngine: NPCs show post-completion dialogue when their chapter is done, primary NPC per chapter resolved dynamically
+- EventBus: added chapter:advanced event
+- WorldScene: server rack is now reactive - red glow (OVERLOADED) when unsolved, green glow (STABILIZED) when puzzle completed
+- WorldScene: multiple NPCs - Sarah always present, Marcus appears after Ch1 completed
+- WorldScene: refreshWorldState() syncs NPCs and server rack on chapter changes
+- NPC class: supports custom spriteKey and labelColor per NPC, added setVisible() and destroy()
+- BootScene: added npc-marcus sprite (purple rectangle)
+- Sarah Ch1 post-completion: offers "What's the next challenge?" -> nextChapter action to advance to Ch2
+- Marcus Ch2 post-completion: offers "Let's tackle the database problem!" -> nextChapter to advance to Ch3
+- Sarah Ch3 post-completion: final congratulations (no more chapters yet)
+- App.tsx HUD: shows "Ch N: chapter-name", dynamic NPC name, per-chapter best grades, chapters completed counter
+- Character design samples page created (character-samples.html) with 3 art styles for user review
+
 NEXT STEPS:
-- World scene needs Marcus NPC for Ch2 and Ch2/Ch3 level transitions
+- Pick character art style and implement sprites (character-samples.html has 3 options)
 - Chapters 4-6 still need implementation (API Design, Rate Limiting, Message Queues)
-- Polish: end-to-end testing of Ch2 and Ch3 game loops
+- End-to-end testing of full Ch1->Ch2->Ch3 game loop
 
 ------------------------------------------------------
 

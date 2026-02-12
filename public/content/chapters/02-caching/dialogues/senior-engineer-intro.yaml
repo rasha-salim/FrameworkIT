@@ -75,17 +75,44 @@ nodes:
     choices:
       - text: "What's the other one?"
         next: joke
+      - text: "What's the next challenge?"
+        next: tease_next
       - text: "Thanks, Marcus!"
         next: end
+        action: end
 
   joke:
     id: joke
     speaker: Marcus
     text: "Naming things. And off-by-one errors. Anyway, great job. The dashboard team will be thrilled."
-    next: end
+    choices:
+      - text: "What's next?"
+        next: tease_next
+      - text: "Ha! See you around."
+        next: end
+        action: end
+
+  tease_next:
+    id: tease_next
+    speaker: Marcus
+    text: "Sarah pinged me earlier - the primary database is getting crushed even with caching. The read load is just too high for a single instance. She mentioned something about read replicas. You should go talk to her."
+    choices:
+      - text: "Let's tackle the database problem!"
+        next: advance
+        action: nextChapter
+      - text: "I'll check it out later."
+        next: end
+        action: end
+
+  advance:
+    id: advance
+    speaker: Marcus
+    text: "Good luck with the database challenge!"
+    action: nextChapter
 
   end:
     id: end
     speaker: Marcus
-    text: "Keep it up. I have a feeling the database team is going to need your help next..."
+    text: "Keep it up. You're becoming quite the systems engineer."
+    action: end
 startNode: start

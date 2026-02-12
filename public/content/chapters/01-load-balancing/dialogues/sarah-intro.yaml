@@ -74,8 +74,11 @@ nodes:
       server isn't enough, add more and distribute the load. Most major websites
       use exactly this approach.
     choices:
-      - text: What else can I learn?
+      - text: What's the next challenge?
         next: tease-next
+      - text: I want to try this puzzle again.
+        next: retry
+        action: startPuzzle
       - text: Thanks, Sarah!
         next: goodbye
         action: end
@@ -84,10 +87,30 @@ nodes:
     id: tease-next
     speaker: Sarah
     text: >
-      There's a lot more to explore. What happens when a server crashes mid-request?
-      How do you handle sessions? What about caching? But one thing at a time --
-      you've earned a break. Come back when you're ready for the next challenge.
-    action: end
+      Now that the servers are handling the load, Marcus from the platform team
+      noticed something -- the monitoring dashboard is really slow. He thinks
+      we need a caching layer. Go talk to him, he's right over there.
+    choices:
+      - text: Let's move on to caching!
+        next: advance
+        action: nextChapter
+      - text: I'll check it out later.
+        next: goodbye
+        action: end
+
+  advance:
+    id: advance
+    speaker: Sarah
+    text: >
+      Good luck with the caching challenge!
+    action: nextChapter
+
+  retry:
+    id: retry
+    speaker: Sarah
+    text: >
+      Sure! Let me set up the system diagram again for you.
+    action: startPuzzle
 
   goodbye:
     id: goodbye

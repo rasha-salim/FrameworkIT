@@ -5,10 +5,23 @@ import { DialogueUI } from '../dialogue/DialogueUI';
 import { PuzzleWorkspace } from '../puzzle/PuzzleWorkspace';
 import { GradeDisplay } from '../puzzle/GradeDisplay';
 
+const CHAPTER_NPC: Record<string, string> = {
+  '01-load-balancing': 'Sarah',
+  '02-caching': 'Marcus',
+  '03-databases': 'Sarah',
+};
+
+const CHAPTER_NUMBER: Record<string, number> = {
+  '01-load-balancing': 1,
+  '02-caching': 2,
+  '03-databases': 3,
+};
+
 export const App: React.FC = () => {
   const phase = useGameStore((s) => s.phase);
   const currentChapter = useGameStore((s) => s.currentChapter);
   const puzzleCompleted = useGameStore((s) => s.puzzleCompleted);
+  const completedChapters = useGameStore((s) => s.completedChapters);
   const prevPhase = useRef(phase);
 
   // When transitioning from results to exploring, check the grade
@@ -20,15 +33,22 @@ export const App: React.FC = () => {
       useGameStore.getState().setPuzzleCompleted(passed);
 
       if (passed) {
-        const bestGrade = localStorage.getItem('puzzle-best-grade');
+        const gradeKey = `puzzle-best-grade-${currentChapter}`;
+        const bestGrade = localStorage.getItem(gradeKey);
         const gradeRank: Record<string, number> = { none: 0, bronze: 1, silver: 2, gold: 3 };
         if (!bestGrade || gradeRank[grade] > (gradeRank[bestGrade] || 0)) {
-          localStorage.setItem('puzzle-best-grade', grade);
+          localStorage.setItem(gradeKey, grade);
         }
       }
     }
     prevPhase.current = phase;
-  }, [phase]);
+  }, [phase, currentChapter]);
+
+  const chapterNum = CHAPTER_NUMBER[currentChapter] || 1;
+  const chapterName = currentChapter.replace(/^\d+-/, '').replace(/-/g, ' ');
+  const npcName = CHAPTER_NPC[currentChapter] || 'the NPC';
+  const bestGradeKey = `puzzle-best-grade-${currentChapter}`;
+  const bestGrade = typeof window !== 'undefined' ? localStorage.getItem(bestGradeKey) : null;
 
   return (
     <>
@@ -47,16 +67,21 @@ export const App: React.FC = () => {
           }}
         >
           <div style={{ fontSize: 12, color: '#6688aa', textTransform: 'uppercase', letterSpacing: 1 }}>
-            Chapter: {currentChapter.replace(/^\d+-/, '').replace(/-/g, ' ')}
+            Ch {chapterNum}: {chapterName}
           </div>
           <div style={{ fontSize: 14, color: '#aabbcc', marginTop: 6 }}>
             {puzzleCompleted
-              ? 'Puzzle complete! Talk to Sarah.'
-              : 'Approach Sarah and press [E] to talk'}
+              ? `Puzzle complete! Talk to ${npcName} for next steps.`
+              : `Approach ${npcName} and press [E] to talk`}
           </div>
-          {puzzleCompleted && (
+          {puzzleCompleted && bestGrade && (
             <div style={{ fontSize: 11, color: '#44cc66', marginTop: 4 }}>
-              Best: {localStorage.getItem('puzzle-best-grade')?.toUpperCase() || 'N/A'}
+              Best: {bestGrade.toUpperCase()}
+            </div>
+          )}
+          {completedChapters.length > 0 && (
+            <div style={{ fontSize: 10, color: '#445566', marginTop: 6 }}>
+              Chapters completed: {completedChapters.length}/3
             </div>
           )}
         </div>
