@@ -3,7 +3,7 @@ import React from 'react';
 import { usePuzzleStore } from './PuzzleStore';
 import { useGameStore } from '../core/GameStore';
 import { EventBus } from '../core/EventBus';
-import { schedulePush } from '../sync/ProgressSync';
+
 import type { Grade, SimulationMetrics } from '../types';
 
 const GRADE_CONFIG: Record<Grade, { label: string; color: string; message: string }> = {
@@ -117,7 +117,6 @@ export const GradeDisplay: React.FC = () => {
       const gradeRank = { none: 0, bronze: 1, silver: 2, gold: 3 };
       if (!bestGrade || gradeRank[grade] > gradeRank[bestGrade as Grade]) {
         localStorage.setItem(gradeKey, grade);
-        schedulePush();
       }
     }
 

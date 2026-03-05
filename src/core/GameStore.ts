@@ -1,5 +1,4 @@
 import { create } from 'zustand';
-import { schedulePush } from '../sync/ProgressSync';
 import type { GamePhase } from '../types';
 
 export const CHAPTER_ORDER = [
@@ -67,7 +66,6 @@ export const useGameStore = create<GameState>((set, get) => ({
       const updated = [...completedChapters, chapter];
       localStorage.setItem('completed-chapters', JSON.stringify(updated));
       set({ completedChapters: updated });
-      schedulePush();
     }
   },
 

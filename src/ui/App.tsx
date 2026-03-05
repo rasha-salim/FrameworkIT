@@ -2,8 +2,6 @@ import React, { useEffect, useRef } from 'react';
 import { useGameStore } from '../core/GameStore';
 import { usePuzzleStore } from '../puzzle/PuzzleStore';
 import { useAuthStore } from '../auth/AuthStore';
-import { schedulePush } from '../sync/ProgressSync';
-import { supabase } from '../lib/supabase';
 import { DialogueUI } from '../dialogue/DialogueUI';
 import { PuzzleWorkspace } from '../puzzle/PuzzleWorkspace';
 import { GradeDisplay } from '../puzzle/GradeDisplay';
@@ -25,8 +23,8 @@ export const App: React.FC = () => {
   const currentChapter = useGameStore((s) => s.currentChapter);
   const puzzleCompleted = useGameStore((s) => s.puzzleCompleted);
   const completedChapters = useGameStore((s) => s.completedChapters);
-  const user = useAuthStore((s) => s.user);
-  const signOut = useAuthStore((s) => s.signOut);
+  const playerName = useAuthStore((s) => s.playerName);
+  const clearPlayer = useAuthStore((s) => s.clearPlayer);
   const prevPhase = useRef(phase);
 
   // When transitioning from results to exploring, check the grade
@@ -43,7 +41,6 @@ export const App: React.FC = () => {
         const gradeRank: Record<string, number> = { none: 0, bronze: 1, silver: 2, gold: 3 };
         if (!bestGrade || gradeRank[grade] > (gradeRank[bestGrade] || 0)) {
           localStorage.setItem(gradeKey, grade);
-          schedulePush();
         }
       }
     }
@@ -58,7 +55,7 @@ export const App: React.FC = () => {
 
   return (
     <>
-      {phase === 'exploring' && supabase && user && (
+      {phase === 'exploring' && playerName && (
         <div
           style={{
             position: 'absolute',
@@ -76,9 +73,9 @@ export const App: React.FC = () => {
             zIndex: 20,
           }}
         >
-          <span style={{ fontSize: 11, color: '#6688aa' }}>{user.email}</span>
+          <span style={{ fontSize: 11, color: '#6688aa' }}>{playerName}</span>
           <button
-            onClick={signOut}
+            onClick={clearPlayer}
             style={{
               background: 'rgba(255, 68, 68, 0.15)',
               border: '1px solid #ff444444',
@@ -90,7 +87,7 @@ export const App: React.FC = () => {
               fontFamily: 'monospace',
             }}
           >
-            Sign Out
+            Reset
           </button>
         </div>
       )}

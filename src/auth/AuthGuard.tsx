@@ -1,21 +1,14 @@
 import React, { useEffect } from 'react';
 import { useAuthStore } from './AuthStore';
 import { AuthUI } from './AuthUI';
-import { supabase } from '../lib/supabase';
 
 export const AuthGuard: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  const { user, initialized, initialize } = useAuthStore();
+  const { playerName, initialized, initialize } = useAuthStore();
 
   useEffect(() => {
     initialize();
   }, [initialize]);
 
-  // Offline-only dev mode: no Supabase configured, skip auth entirely
-  if (!supabase) {
-    return <>{children}</>;
-  }
-
-  // Still loading session
   if (!initialized) {
     return (
       <div
@@ -36,11 +29,9 @@ export const AuthGuard: React.FC<{ children: React.ReactNode }> = ({ children })
     );
   }
 
-  // Not authenticated: show login
-  if (!user) {
+  if (!playerName) {
     return <AuthUI />;
   }
 
-  // Authenticated: render game
   return <>{children}</>;
 };

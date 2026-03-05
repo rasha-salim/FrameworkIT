@@ -7,8 +7,6 @@ import { App } from './ui/App';
 import { AuthGuard } from './auth/AuthGuard';
 import { DialogueEngine } from './dialogue/DialogueEngine';
 import { useAuthStore } from './auth/AuthStore';
-import { supabase } from './lib/supabase';
-import { pullFromCloud } from './sync/ProgressSync';
 
 // Initialize dialogue system (sets up EventBus listeners)
 DialogueEngine.init();
@@ -41,7 +39,7 @@ function startPhaserGame() {
   phaserGame = new Phaser.Game(config);
 }
 
-// Render React UI immediately (AuthGuard will show login if needed)
+// Render React UI immediately (AuthGuard will show name prompt if needed)
 const uiRoot = document.getElementById('ui-root');
 if (uiRoot) {
   ReactDOM.createRoot(uiRoot).render(
@@ -49,27 +47,18 @@ if (uiRoot) {
   );
 }
 
-// If no Supabase configured, start Phaser immediately (offline-only mode)
-if (!supabase) {
+// Initialize auth store and start game when player name is available
+useAuthStore.getState().initialize();
+const { playerName } = useAuthStore.getState();
+
+if (playerName) {
   startPhaserGame();
 } else {
-  // Subscribe to auth state: start Phaser after user authenticates
+  // Wait for player to enter their name
   const unsubscribe = useAuthStore.subscribe((state, prevState) => {
-    if (state.user && !prevState.user) {
-      // User just authenticated: pull cloud data then start game
-      pullFromCloud().then(() => {
-        startPhaserGame();
-      });
-    }
-  });
-
-  // Also handle case where session is already restored on page load
-  useAuthStore.getState().initialize().then(() => {
-    const { user } = useAuthStore.getState();
-    if (user) {
-      pullFromCloud().then(() => {
-        startPhaserGame();
-      });
+    if (state.playerName && !prevState.playerName) {
+      startPhaserGame();
+      unsubscribe();
     }
   });
 }
