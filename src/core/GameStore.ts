@@ -44,14 +44,20 @@ function deriveCurrentChapter(completed: string[]): string {
   return CHAPTER_ORDER[CHAPTER_ORDER.length - 1];
 }
 
+function loadBestGrade(chapter: string): string | null {
+  return localStorage.getItem(`puzzle-best-grade-${chapter}`);
+}
+
 const _completedChapters = loadCompletedChapters();
+const _currentChapter = deriveCurrentChapter(_completedChapters);
+const _bestGrade = loadBestGrade(_currentChapter);
 
 export const useGameStore = create<GameState>((set, get) => ({
   phase: 'exploring',
-  currentChapter: deriveCurrentChapter(_completedChapters),
+  currentChapter: _currentChapter,
   currentPuzzleId: null,
-  puzzleCompleted: false,
-  bestGrade: null,
+  puzzleCompleted: _bestGrade !== null,
+  bestGrade: _bestGrade,
   completedChapters: _completedChapters,
 
   setPhase: (phase) => set({ phase }),
@@ -76,11 +82,12 @@ export const useGameStore = create<GameState>((set, get) => ({
       return false;
     }
     const nextChapter = CHAPTER_ORDER[currentIndex + 1];
+    const nextBestGrade = loadBestGrade(nextChapter);
     set({
       currentChapter: nextChapter,
       currentPuzzleId: null,
-      puzzleCompleted: false,
-      bestGrade: null,
+      puzzleCompleted: nextBestGrade !== null,
+      bestGrade: nextBestGrade,
     });
     return true;
   },
