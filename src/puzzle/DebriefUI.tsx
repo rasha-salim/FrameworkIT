@@ -229,6 +229,7 @@ export const DebriefUI: React.FC = () => {
               <textarea
                 value={state.answer}
                 onChange={(e) => updateQuestion(q.id, { answer: e.target.value })}
+                onKeyDown={(e) => e.stopPropagation()}
                 placeholder="Type your answer here..."
                 style={{
                   width: '100%',

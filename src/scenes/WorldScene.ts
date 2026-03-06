@@ -60,7 +60,16 @@ export class WorldScene extends Phaser.Scene {
     const phase = useGameStore.getState().phase;
     if (phase !== 'exploring') {
       this.player.disableInput();
+      // Disable Phaser keyboard capture so React inputs (textareas, etc.) receive key events
+      if (this.input.keyboard) {
+        this.input.keyboard.enabled = false;
+      }
       return;
+    }
+
+    // Re-enable keyboard when back to exploring
+    if (this.input.keyboard && !this.input.keyboard.enabled) {
+      this.input.keyboard.enabled = true;
     }
 
     this.player.update();
