@@ -46,7 +46,6 @@ export class WorldScene extends Phaser.Scene {
     EventBus.on('dialogue:ended', () => {
       useGameStore.getState().setPhase('exploring');
       this.scene.resume();
-      // Refresh world state after dialogue (chapter may have advanced)
       this.refreshWorldState();
     });
 
@@ -54,7 +53,6 @@ export class WorldScene extends Phaser.Scene {
       this.refreshWorldState();
     });
 
-    // Initial state sync
     this.refreshWorldState();
   }
 
@@ -67,13 +65,11 @@ export class WorldScene extends Phaser.Scene {
 
     this.player.update();
 
-    // Check chapter changes
     const gameState = useGameStore.getState();
     if (gameState.currentChapter !== this.currentChapter) {
       this.refreshWorldState();
     }
 
-    // Check puzzle completion changes (for live server rack updates)
     if (gameState.puzzleCompleted !== this.lastPuzzleCompleted) {
       this.lastPuzzleCompleted = gameState.puzzleCompleted;
       this.updateServerRackState();
@@ -113,7 +109,6 @@ export class WorldScene extends Phaser.Scene {
   }
 
   private setupNPCs(): void {
-    // Clear existing NPCs
     for (const npc of this.npcs) {
       npc.destroy();
     }
@@ -122,7 +117,6 @@ export class WorldScene extends Phaser.Scene {
     const chapter = useGameStore.getState().currentChapter;
     this.currentChapter = chapter;
 
-    // Sarah is always present
     const sarah = new NPC(this, 500, 450, 'Sarah (SRE)', 'sarah', {
       spriteKey: 'npc-sarah',
       labelColor: '#44cc66',
@@ -137,7 +131,6 @@ export class WorldScene extends Phaser.Scene {
       this
     );
 
-    // Marcus appears from Ch2 onwards
     if (chapter === '02-caching' || chapter === '03-databases' || useGameStore.getState().isChapterCompleted('01-load-balancing')) {
       const marcus = new NPC(this, 700, 450, 'Marcus (Senior Eng)', 'marcus', {
         spriteKey: 'npc-marcus',
@@ -173,7 +166,6 @@ export class WorldScene extends Phaser.Scene {
     const completedCount = gameState.completedChapters.length;
 
     if (currentChapterDone || completedCount > 0) {
-      // Server is healthy - green state
       this.serverRack.glow.fillColor = 0x22cc44;
       this.serverRack.glow.fillAlpha = 0.08;
       this.serverRack.glowTween.stop();
@@ -195,7 +187,6 @@ export class WorldScene extends Phaser.Scene {
         repeat: -1,
       });
 
-      // Update label based on how many chapters completed
       if (completedCount >= 3) {
         this.serverRack.label.setText('ALL SYSTEMS GO');
         this.serverRack.label.setColor('#44cc66');
@@ -204,13 +195,11 @@ export class WorldScene extends Phaser.Scene {
         this.serverRack.label.setColor('#44cc66');
       }
 
-      // Slot colors go green
       for (const slot of this.serverRack.slots) {
         slot.fillColor = 0x1a2e1a;
         slot.setStrokeStyle(1, 0x337744);
       }
     } else {
-      // Server is overloaded - red state (default)
       this.serverRack.glow.fillColor = 0xff2222;
       this.serverRack.glow.fillAlpha = 0.1;
 
@@ -229,46 +218,97 @@ export class WorldScene extends Phaser.Scene {
   private buildRoom(): void {
     const bg = this.add.graphics();
 
-    // Ceiling
-    bg.fillStyle(0x0a0e1a, 1);
+    // Ceiling (dark)
+    bg.fillStyle(0x080c16, 1);
     bg.fillRect(0, 0, 1024, 200);
 
-    // Walls
-    bg.fillStyle(0x12182d, 1);
-    bg.fillRect(0, 200, 1024, 250);
+    // Back wall with subtle gradient bands
+    bg.fillStyle(0x10162a, 1);
+    bg.fillRect(0, 200, 1024, 100);
+    bg.fillStyle(0x121830, 1);
+    bg.fillRect(0, 300, 1024, 80);
+    bg.fillStyle(0x141a35, 1);
+    bg.fillRect(0, 380, 1024, 70);
 
     // Floor
     bg.fillStyle(0x1a1a2e, 1);
     bg.fillRect(0, 450, 1024, 150);
 
-    // Floor line
-    bg.lineStyle(2, 0x2a2a4e, 0.5);
-    bg.lineBetween(0, 480, 1024, 480);
-
-    // Ceiling lights
-    for (let x = 100; x < 1024; x += 200) {
-      bg.fillStyle(0x334466, 0.6);
-      bg.fillRect(x - 20, 0, 40, 8);
-      bg.fillStyle(0x6688aa, 0.15);
-      bg.fillTriangle(x - 60, 200, x + 60, 200, x, 8);
+    // Floor tiles (subtle grid)
+    bg.lineStyle(1, 0x222244, 0.3);
+    for (let x = 0; x < 1024; x += 64) {
+      bg.lineBetween(x, 450, x, 600);
     }
+    bg.lineStyle(1, 0x222244, 0.2);
+    bg.lineBetween(0, 480, 1024, 480);
+    bg.lineBetween(0, 520, 1024, 520);
+    bg.lineBetween(0, 560, 1024, 560);
+
+    // Floor highlight line (where wall meets floor)
+    bg.lineStyle(2, 0x2a2a4e, 0.6);
+    bg.lineBetween(0, 450, 1024, 450);
+
+    // Ceiling lights with softer cones
+    for (let x = 100; x < 1024; x += 200) {
+      // Light fixture
+      bg.fillStyle(0x445577, 0.8);
+      bg.fillRect(x - 24, 0, 48, 6);
+      bg.fillStyle(0x556688, 0.9);
+      bg.fillRect(x - 16, 6, 32, 4);
+
+      // Light cone (layered for gradient effect)
+      bg.fillStyle(0x8899bb, 0.04);
+      bg.fillTriangle(x - 80, 200, x + 80, 200, x, 10);
+      bg.fillStyle(0x8899bb, 0.06);
+      bg.fillTriangle(x - 50, 200, x + 50, 200, x, 10);
+      bg.fillStyle(0xaabbdd, 0.03);
+      bg.fillTriangle(x - 30, 200, x + 30, 200, x, 10);
+    }
+
+    // Wall panels (subtle vertical lines suggesting server room panels)
+    bg.lineStyle(1, 0x1a2040, 0.4);
+    for (let x = 0; x < 1024; x += 128) {
+      bg.lineBetween(x, 200, x, 450);
+    }
+
+    // Baseboard
+    bg.fillStyle(0x0e1220, 1);
+    bg.fillRect(0, 445, 1024, 5);
+
+    // Ambient floor glow near server rack
+    bg.fillStyle(0xff2222, 0.02);
+    bg.fillRect(780, 450, 160, 150);
   }
 
   private buildServerRack(): ServerRackVisuals {
-    // Server rack on the right side
-    const rack = this.add.rectangle(850, 400, 64, 100, 0x222244);
+    // Server rack on the right side -- taller and more detailed
+    const rack = this.add.rectangle(850, 390, 72, 120, 0x1a1a33);
     rack.setStrokeStyle(2, 0x334466);
 
-    // Server slots
+    // Rack top cap
+    this.add.rectangle(850, 328, 76, 6, 0x334466);
+
+    // Server slots (6 slots)
     const slots: Phaser.GameObjects.Rectangle[] = [];
-    for (let i = 0; i < 4; i++) {
-      const slot = this.add.rectangle(850, 365 + i * 22, 50, 16, 0x1a1a3e);
+    for (let i = 0; i < 6; i++) {
+      const slot = this.add.rectangle(850, 345 + i * 18, 56, 12, 0x1a1a3e);
       slot.setStrokeStyle(1, 0x445577);
       slots.push(slot);
+
+      // Tiny LED per slot
+      const ledColor = i < 3 ? 0x44cc66 : 0xff3333;
+      const led = this.add.circle(878, 345 + i * 18, 2, ledColor, 0.6);
+      this.tweens.add({
+        targets: led,
+        alpha: { from: 0.3, to: 0.8 },
+        duration: 600 + i * 200,
+        yoyo: true,
+        repeat: -1,
+      });
     }
 
     // Glow effect
-    const glow = this.add.rectangle(850, 400, 80, 116, 0xff2222, 0.1);
+    const glow = this.add.rectangle(850, 390, 88, 130, 0xff2222, 0.1);
     const glowTween = this.tweens.add({
       targets: glow,
       alpha: { from: 0.05, to: 0.2 },
@@ -278,7 +318,7 @@ export class WorldScene extends Phaser.Scene {
     });
 
     // Status light
-    const statusLight = this.add.circle(882, 358, 4, 0xff3333);
+    const statusLight = this.add.circle(882, 340, 5, 0xff3333);
     const statusLightTween = this.tweens.add({
       targets: statusLight,
       alpha: { from: 0.3, to: 1 },
@@ -292,6 +332,8 @@ export class WorldScene extends Phaser.Scene {
       fontSize: '10px',
       color: '#ff4444',
       fontFamily: 'monospace',
+      stroke: '#000000',
+      strokeThickness: 2,
     });
     label.setOrigin(0.5, 0);
 

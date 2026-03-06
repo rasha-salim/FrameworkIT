@@ -38,28 +38,46 @@ export const AuthUI: React.FC = () => {
           maxWidth: '90vw',
         }}
       >
+        {/* Icon */}
+        <div style={{ textAlign: 'center', marginBottom: 16 }}>
+          <svg width="56" height="56" viewBox="0 0 64 64" xmlns="http://www.w3.org/2000/svg">
+            <rect width="64" height="64" rx="14" fill="#0f1428" />
+            <rect x="1" y="1" width="62" height="62" rx="13" fill="none" stroke="#4488ff" strokeWidth="1.5" opacity="0.4" />
+            <rect x="8" y="12" width="14" height="10" rx="3" fill="#4488ff" opacity="0.9" />
+            <rect x="8" y="42" width="14" height="10" rx="3" fill="#4488ff" opacity="0.9" />
+            <rect x="28" y="24" width="16" height="16" rx="4" fill="#aa66ff" opacity="0.9" />
+            <rect x="50" y="27" width="10" height="10" rx="3" fill="#44cc66" opacity="0.9" />
+            <line x1="22" y1="17" x2="28" y2="30" stroke="#4488ff" strokeWidth="2" strokeLinecap="round" opacity="0.7" />
+            <line x1="22" y1="47" x2="28" y2="34" stroke="#4488ff" strokeWidth="2" strokeLinecap="round" opacity="0.7" />
+            <line x1="44" y1="32" x2="50" y2="32" stroke="#44cc66" strokeWidth="2" strokeLinecap="round" opacity="0.7" />
+            <circle cx="25" cy="24" r="1.5" fill="#4488ff" />
+            <circle cx="25" cy="40" r="1.5" fill="#4488ff" />
+            <circle cx="47" cy="32" r="1.5" fill="#44cc66" />
+          </svg>
+        </div>
+
         <div
           style={{
             fontSize: 24,
             fontWeight: 700,
             color: '#4488ff',
             textAlign: 'center',
-            marginBottom: 8,
+            marginBottom: 4,
           }}
         >
-          FrameworkIT
+          Framework<span style={{ color: '#aa66ff' }}>IT</span>
         </div>
         <div
           style={{
-            fontSize: 12,
+            fontSize: 11,
             color: '#6688aa',
             textAlign: 'center',
             marginBottom: 32,
             textTransform: 'uppercase',
-            letterSpacing: 2,
+            letterSpacing: 3,
           }}
         >
-          System Design Game
+          Learn System Design by Building
         </div>
 
         <form onSubmit={handleSubmit}>

@@ -34,73 +34,88 @@ export const CacheNode: React.FC<NodeProps> = ({ id, data }) => {
     setNodes(updated);
   };
 
+  const getHitColor = () => {
+    if (hitRate >= 70) return '#44cc66';
+    if (hitRate >= 40) return '#ccaa44';
+    return '#ff6644';
+  };
+
+  const selectStyle: React.CSSProperties = {
+    width: '100%',
+    background: '#1a150a',
+    color: '#ffbb66',
+    border: '1px solid #664422',
+    borderRadius: 6,
+    padding: '7px 10px',
+    fontSize: 12,
+    fontFamily: 'monospace',
+    marginBottom: 8,
+    cursor: running ? 'not-allowed' : 'pointer',
+    opacity: running ? 0.5 : 1,
+  };
+
   return (
     <div style={{
-      background: 'linear-gradient(135deg, #2a1f0a, #352a12)',
+      background: 'linear-gradient(135deg, #241c0a, #302410)',
       border: '2px solid #ff9933',
-      borderRadius: 8,
-      padding: 16,
-      minWidth: 180,
+      borderRadius: 10,
+      padding: '14px 16px',
+      minWidth: 195,
       color: '#e0e8f0',
       fontFamily: 'monospace',
       fontSize: 13,
+      boxShadow: hitRate > 0
+        ? '0 0 16px rgba(255, 153, 51, 0.2), inset 0 1px 0 rgba(255,255,255,0.05)'
+        : 'inset 0 1px 0 rgba(255,255,255,0.05)',
+      transition: 'box-shadow 0.3s',
     }}>
-      <Handle type="target" position={Position.Left} style={{ background: '#ff9933', width: 10, height: 10 }} />
+      <Handle type="target" position={Position.Left}
+        style={{ background: '#ff9933', width: 12, height: 12, border: '2px solid #241c0a' }} />
 
-      <div style={{ fontSize: 11, color: '#996622', textTransform: 'uppercase', letterSpacing: 1, marginBottom: 8 }}>
-        Cache
+      <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 10 }}>
+        <div style={{
+          width: 28, height: 28, borderRadius: 6,
+          background: 'rgba(255, 153, 51, 0.12)',
+          display: 'flex', alignItems: 'center', justifyContent: 'center',
+          fontSize: 13, color: '#ffbb66',
+        }}>
+          {'{ }'}
+        </div>
+        <div style={{ fontSize: 11, color: '#aa7733', textTransform: 'uppercase', letterSpacing: 1 }}>
+          Cache
+        </div>
       </div>
 
-      <select
-        value={strategy}
-        onChange={handleStrategyChange}
-        disabled={running}
-        style={{
-          width: '100%', background: '#1a1a2e', color: '#ffbb66',
-          border: '1px solid #996622', borderRadius: 4, padding: '6px 8px',
-          fontSize: 12, fontFamily: 'monospace', marginBottom: 8,
-          cursor: running ? 'not-allowed' : 'pointer',
-          opacity: running ? 0.6 : 1,
-        }}
-      >
+      <select value={strategy} onChange={handleStrategyChange} disabled={running} style={selectStyle}>
         <option value="cache-aside">Cache-Aside</option>
         <option value="write-through">Write-Through</option>
         <option value="read-through">Read-Through</option>
       </select>
 
-      <select
-        value={evictionPolicy}
-        onChange={handleEvictionChange}
-        disabled={running}
-        style={{
-          width: '100%', background: '#1a1a2e', color: '#ffbb66',
-          border: '1px solid #996622', borderRadius: 4, padding: '6px 8px',
-          fontSize: 12, fontFamily: 'monospace', marginBottom: 8,
-          cursor: running ? 'not-allowed' : 'pointer',
-          opacity: running ? 0.6 : 1,
-        }}
-      >
+      <select value={evictionPolicy} onChange={handleEvictionChange} disabled={running} style={selectStyle}>
         <option value="LRU">LRU</option>
         <option value="LFU">LFU</option>
         <option value="FIFO">FIFO</option>
       </select>
 
-      <div style={{ background: '#1a1a2e', borderRadius: 3, height: 8, overflow: 'hidden', marginBottom: 4 }}>
+      {/* Hit rate bar */}
+      <div style={{ background: '#1a150a', borderRadius: 4, height: 8, overflow: 'hidden', marginBottom: 4, border: '1px solid #302410' }}>
         <div style={{
           width: `${Math.min(100, hitRate)}%`,
           height: '100%',
-          background: 'linear-gradient(90deg, #ff4466, #44cc66)',
-          transition: 'width 0.1s',
+          background: `linear-gradient(90deg, #ff664488, ${getHitColor()})`,
+          transition: 'width 0.15s',
           borderRadius: 3,
         }} />
       </div>
-      <div style={{ fontSize: 10, color: '#8899aa', marginBottom: 8 }}>
-        Hit: {Math.round(hitRate)}%
+      <div style={{ fontSize: 10, color: '#8899aa', marginBottom: 10, display: 'flex', justifyContent: 'space-between' }}>
+        <span>Hit Rate</span>
+        <span style={{ color: getHitColor(), fontWeight: 700 }}>{Math.round(hitRate)}%</span>
       </div>
 
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', fontSize: 11, color: '#8899aa', gap: 8 }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
-          <span>TTL:</span>
+          <span style={{ color: '#aa7733' }}>TTL</span>
           <input
             type="number"
             value={ttlSeconds}
@@ -110,24 +125,25 @@ export const CacheNode: React.FC<NodeProps> = ({ id, data }) => {
             max={300}
             style={{
               width: 48,
-              background: '#1a1a2e',
+              background: '#1a150a',
               color: '#ffbb66',
-              border: '1px solid #996622',
-              borderRadius: 3,
-              padding: '2px 4px',
+              border: '1px solid #664422',
+              borderRadius: 4,
+              padding: '3px 5px',
               fontSize: 11,
               fontFamily: 'monospace',
               textAlign: 'center',
               cursor: running ? 'not-allowed' : 'text',
-              opacity: running ? 0.6 : 1,
+              opacity: running ? 0.5 : 1,
             }}
           />
           <span>s</span>
         </div>
-        <span>Size: {maxEntries}</span>
+        <span style={{ color: '#aa7733' }}>{maxEntries} slots</span>
       </div>
 
-      <Handle type="source" position={Position.Right} style={{ background: '#ff9933', width: 10, height: 10 }} />
+      <Handle type="source" position={Position.Right}
+        style={{ background: '#ff9933', width: 12, height: 12, border: '2px solid #241c0a' }} />
     </div>
   );
 };

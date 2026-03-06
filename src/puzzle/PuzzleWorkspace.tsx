@@ -157,7 +157,7 @@ export const PuzzleWorkspace: React.FC = () => {
           {
             ...connection,
             animated: true,
-            style: { stroke: '#4488ff', strokeWidth: 2 },
+            style: { stroke: '#4488ff', strokeWidth: 2.5, strokeLinecap: 'round' },
           },
           edges
         )
