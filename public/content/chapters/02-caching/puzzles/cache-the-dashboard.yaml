@@ -90,3 +90,11 @@ objectives:
 simulation:
   durationSeconds: 60
   tickRateMs: 100
+
+debrief:
+  - id: caching-strategy
+    question: "Why did you choose the caching strategy and TTL you used? What would happen if the TTL was much shorter or much longer?"
+    hint: "A shorter TTL means fresher data but more DB hits. A longer TTL means better performance but potentially stale data."
+  - id: cache-tradeoffs
+    question: "What is the fundamental trade-off that caching introduces, and how did your configuration balance it?"
+    hint: "Think about the tension between performance (cache hit rate) and data freshness (staleness)."

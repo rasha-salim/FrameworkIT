@@ -1,10 +1,11 @@
 import React, { useEffect, useRef } from 'react';
 import { useGameStore } from '../core/GameStore';
-import { usePuzzleStore } from '../puzzle/PuzzleStore';
+
 import { useAuthStore } from '../auth/AuthStore';
 import { DialogueUI } from '../dialogue/DialogueUI';
 import { PuzzleWorkspace } from '../puzzle/PuzzleWorkspace';
 import { GradeDisplay } from '../puzzle/GradeDisplay';
+import { DebriefUI } from '../puzzle/DebriefUI';
 
 const CHAPTER_NPC: Record<string, string> = {
   '01-load-balancing': 'Sarah',
@@ -27,25 +28,11 @@ export const App: React.FC = () => {
   const clearPlayer = useAuthStore((s) => s.clearPlayer);
   const prevPhase = useRef(phase);
 
-  // When transitioning from results to exploring, check the grade
-  // to determine if the puzzle was actually passed
+  // Grade saving and puzzleCompleted are now handled by DebriefUI (on pass)
+  // and GradeDisplay (on fail) directly, so no phase-transition effect needed.
   useEffect(() => {
-    if (prevPhase.current === 'results' && phase === 'exploring') {
-      const grade = usePuzzleStore.getState().simulationState.grade;
-      const passed = grade !== 'none';
-      useGameStore.getState().setPuzzleCompleted(passed);
-
-      if (passed) {
-        const gradeKey = `puzzle-best-grade-${currentChapter}`;
-        const bestGrade = localStorage.getItem(gradeKey);
-        const gradeRank: Record<string, number> = { none: 0, bronze: 1, silver: 2, gold: 3 };
-        if (!bestGrade || gradeRank[grade] > (gradeRank[bestGrade] || 0)) {
-          localStorage.setItem(gradeKey, grade);
-        }
-      }
-    }
     prevPhase.current = phase;
-  }, [phase, currentChapter]);
+  }, [phase]);
 
   const chapterNum = CHAPTER_NUMBER[currentChapter] || 1;
   const chapterName = currentChapter.replace(/^\d+-/, '').replace(/-/g, ' ');
@@ -130,6 +117,7 @@ export const App: React.FC = () => {
       {phase === 'dialogue' && <DialogueUI />}
       {phase === 'puzzle' && <PuzzleWorkspace />}
       {phase === 'results' && <GradeDisplay />}
+      {phase === 'debrief' && <DebriefUI />}
     </>
   );
 };

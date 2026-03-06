@@ -105,22 +105,17 @@ export const GradeDisplay: React.FC = () => {
 
   const handleBackToWorld = () => {
     const passed = grade !== 'none';
-    useGameStore.getState().setPuzzleCompleted(passed);
-    useGameStore.getState().setPhase('exploring');
-    useGameStore.getState().setCurrentPuzzleId(null);
 
-    // Only save grade if the player actually passed
     if (passed) {
-      const currentChapter = useGameStore.getState().currentChapter;
-      const gradeKey = `puzzle-best-grade-${currentChapter}`;
-      const bestGrade = localStorage.getItem(gradeKey);
-      const gradeRank = { none: 0, bronze: 1, silver: 2, gold: 3 };
-      if (!bestGrade || gradeRank[grade] > gradeRank[bestGrade as Grade]) {
-        localStorage.setItem(gradeKey, grade);
-      }
+      // Go to debrief step before returning to world
+      useGameStore.getState().setPhase('debrief');
+    } else {
+      // Failed -- go straight back to exploring
+      useGameStore.getState().setPuzzleCompleted(false);
+      useGameStore.getState().setPhase('exploring');
+      useGameStore.getState().setCurrentPuzzleId(null);
+      EventBus.emit('puzzle:back-to-world');
     }
-
-    EventBus.emit('puzzle:back-to-world');
   };
 
   const handleTryAgain = () => {

@@ -101,3 +101,11 @@ objectives:
 simulation:
   durationSeconds: 60
   tickRateMs: 100
+
+debrief:
+  - id: replica-design
+    question: "Explain how read replicas help with your workload. Why can't writes go to replicas too?"
+    hint: "Think about data consistency -- if writes went to multiple nodes, how would they stay in sync?"
+  - id: replication-tradeoffs
+    question: "What is replication lag and how did it affect your design decisions? How many replicas did you use and why?"
+    hint: "More replicas means more read capacity but also more replication overhead. There's a sweet spot."

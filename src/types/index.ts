@@ -1,4 +1,10 @@
-export type GamePhase = 'exploring' | 'dialogue' | 'puzzle' | 'results';
+export type GamePhase = 'exploring' | 'dialogue' | 'puzzle' | 'results' | 'debrief';
+
+export interface DebriefQuestion {
+  id: string;
+  question: string;
+  hint?: string;
+}
 
 export interface ChapterMeta {
   id: string;
@@ -89,6 +95,7 @@ export interface PuzzleData {
     durationSeconds: number;
     tickRateMs: number;
   };
+  debrief?: DebriefQuestion[];
 }
 
 export interface SimulationMetrics {
