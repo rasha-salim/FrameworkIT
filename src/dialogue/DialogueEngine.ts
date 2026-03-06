@@ -105,7 +105,14 @@ export class DialogueEngine {
   }
 
   // Check if this NPC belongs to a chapter that's already completed
+  // but is NOT the primary NPC for the current chapter
   private isNPCFromCompletedChapter(npcId: string, currentChapter: string): boolean {
+    // If this NPC is the primary NPC for the current chapter, they should
+    // show the current chapter's dialogue, not a previous chapter's post-complete
+    if (this.isCurrentChapterNPC(npcId, currentChapter)) {
+      return false;
+    }
+
     const gameState = useGameStore.getState();
     const primaryNPCs: Record<string, string> = {
       '01-load-balancing': 'sarah',
