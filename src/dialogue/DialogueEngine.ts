@@ -23,6 +23,10 @@ const CHAPTER_NPC_MAP: Record<string, Record<string, ChapterDialogueConfig>> = {
     sarah: { dialogue: 'sarah-db-intro', puzzleId: 'scale-reads-with-replicas' },
     marcus: { dialogue: 'senior-engineer-intro', puzzleId: 'cache-the-dashboard' },
   },
+  '04-rate-limiting': {
+    marcus: { dialogue: 'marcus-rate-limit-intro', puzzleId: 'protect-the-api' },
+    sarah: { dialogue: 'sarah-db-intro', puzzleId: 'scale-reads-with-replicas' },
+  },
 };
 
 export class DialogueEngine {
@@ -100,6 +104,7 @@ export class DialogueEngine {
       '01-load-balancing': 'sarah',
       '02-caching': 'marcus',
       '03-databases': 'sarah',
+      '04-rate-limiting': 'marcus',
     };
     return primaryNPCs[chapter] === npcId;
   }
@@ -118,6 +123,7 @@ export class DialogueEngine {
       '01-load-balancing': 'sarah',
       '02-caching': 'marcus',
       '03-databases': 'sarah',
+      '04-rate-limiting': 'marcus',
     };
 
     for (const [chapter, primaryNpc] of Object.entries(primaryNPCs)) {
@@ -134,6 +140,7 @@ export class DialogueEngine {
       '01-load-balancing': 'sarah',
       '02-caching': 'marcus',
       '03-databases': 'sarah',
+      '04-rate-limiting': 'marcus',
     };
 
     for (const [chapter, primaryNpc] of Object.entries(primaryNPCs)) {

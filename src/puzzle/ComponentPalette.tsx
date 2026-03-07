@@ -39,6 +39,12 @@ const PALETTE_ITEMS: PaletteItem[] = [
     color: '#66aacc',
     description: 'Read-only DB replica',
   },
+  {
+    type: 'rate-limiter',
+    label: 'Rate Limiter',
+    color: '#ff4466',
+    description: 'Filters excess traffic',
+  },
 ];
 
 export const ComponentPalette: React.FC = () => {
@@ -66,6 +72,7 @@ export const ComponentPalette: React.FC = () => {
       'cache': 650,
       'database': 850,
       'read-replica': 1050,
+      'rate-limiter': 420,
     };
 
     const defaults: Record<string, Record<string, unknown>> = {
@@ -74,6 +81,7 @@ export const ComponentPalette: React.FC = () => {
       'cache': { strategy: 'cache-aside', evictionPolicy: 'LRU', ttlSeconds: 30, maxEntries: 1000, hitRate: 0 },
       'database': { maxRPS: 800, readLatencyMs: 50, writeLatencyMs: 100, maxConnections: 100, readCount: 0, writeCount: 0, currentConnections: 0 },
       'read-replica': { maxRPS: 800, readLatencyMs: 50, replicationLagMs: 100 },
+      'rate-limiter': { maxTokens: 500, refillRate: 200 },
     };
 
     const newNode = {

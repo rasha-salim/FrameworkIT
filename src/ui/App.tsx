@@ -1,5 +1,5 @@
 import React, { useEffect, useRef } from 'react';
-import { useGameStore } from '../core/GameStore';
+import { useGameStore, CHAPTER_ORDER } from '../core/GameStore';
 
 import { useAuthStore } from '../auth/AuthStore';
 import { DialogueUI } from '../dialogue/DialogueUI';
@@ -11,12 +11,14 @@ const CHAPTER_NPC: Record<string, string> = {
   '01-load-balancing': 'Sarah',
   '02-caching': 'Marcus',
   '03-databases': 'Sarah',
+  '04-rate-limiting': 'Marcus',
 };
 
 const CHAPTER_NUMBER: Record<string, number> = {
   '01-load-balancing': 1,
   '02-caching': 2,
   '03-databases': 3,
+  '04-rate-limiting': 4,
 };
 
 export const App: React.FC = () => {
@@ -108,7 +110,7 @@ export const App: React.FC = () => {
           )}
           {completedChapters.length > 0 && (
             <div style={{ fontSize: 10, color: '#445566', marginTop: 6 }}>
-              Chapters completed: {completedChapters.length}/3
+              Chapters completed: {completedChapters.length}/{CHAPTER_ORDER.length}
             </div>
           )}
         </div>

@@ -10,6 +10,8 @@ export interface SimRequest {
   cached?: boolean;
   stale?: boolean;
   cacheKey?: number;
+  // Ch 4: rate limiting
+  rateLimited?: boolean;
 }
 
 export interface ComponentState {

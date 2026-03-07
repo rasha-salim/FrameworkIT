@@ -1,0 +1,115 @@
+id: marcus-rate-limit-intro
+nodes:
+  start:
+    id: start
+    speaker: Marcus
+    text: "We have a problem. Remember the public API we launched last week? It went viral. We're getting 12,000 requests per second, but our backend can only handle about 9,000."
+    choices:
+      - text: "Can we just scale up the servers?"
+        next: scale_up
+      - text: "Are all those requests legitimate?"
+        next: not_all_legit
+
+  scale_up:
+    id: scale_up
+    speaker: Marcus
+    text: "We could, but here's the thing - about 75% of that traffic is from scrapers and bots. We'd be scaling up to serve abusive traffic. That's throwing money at the wrong problem."
+    choices:
+      - text: "So we need to filter out the bad traffic?"
+        next: filtering
+      - text: "How do we tell legitimate from abusive?"
+        next: not_all_legit
+
+  not_all_legit:
+    id: not_all_legit
+    speaker: Marcus
+    text: "Roughly 3,000 req/s is legitimate user traffic. The rest is scrapers, bots, and automated tools hitting the API way too aggressively. We need to let the good traffic through while blocking the excess."
+    choices:
+      - text: "Sounds like we need rate limiting."
+        next: rate_limiting
+      - text: "How do we do that?"
+        next: filtering
+
+  filtering:
+    id: filtering
+    speaker: Marcus
+    text: "Rate limiting. We put a limiter between the load balancer and the web servers. It acts like a gate - each request costs a token. When the bucket is empty, requests get rejected until it refills."
+    next: token_bucket
+
+  rate_limiting:
+    id: rate_limiting
+    speaker: Marcus
+    text: "Exactly. The most common approach is the token bucket algorithm. Think of it like a bucket that holds tokens. Each request consumes one token. The bucket refills at a steady rate."
+    next: token_bucket
+
+  token_bucket:
+    id: token_bucket
+    speaker: Marcus
+    text: "Two key parameters: max tokens (bucket size) controls burst capacity, and refill rate controls sustained throughput. Set them too low and you block real users. Too high and abusive traffic gets through."
+    choices:
+      - text: "What's the right balance?"
+        next: tradeoff
+      - text: "Let me try setting it up!"
+        next: start_puzzle
+
+  tradeoff:
+    id: tradeoff
+    speaker: Marcus
+    text: "That's the core tension. You need to reject enough to protect the servers - at least 40% of traffic should be rejected. But reject too much and you'll start blocking legitimate users. Aim to keep rejection under 80%."
+    choices:
+      - text: "Got it. Let me try!"
+        next: start_puzzle
+      - text: "Can I use multiple rate limiters?"
+        next: multiple
+
+  multiple:
+    id: multiple
+    speaker: Marcus
+    text: "You can place up to three rate limiters. Multiple limiters can distribute the filtering load. But each one costs money, so keep an eye on the budget. Find the sweet spot."
+    next: start_puzzle
+
+  start_puzzle:
+    id: start_puzzle
+    speaker: Marcus
+    text: "Here's the setup. The load balancer distributes to three web servers. Add rate limiters to protect them from the flood. Remember: protect the servers, but don't block real users. Good luck!"
+    action: startPuzzle
+
+  post_complete:
+    id: post_complete
+    speaker: Marcus
+    text: "Great work! The API is stable now. Rate limiting is essential for any public-facing service. Without it, a single bad actor can take down your entire system."
+    choices:
+      - text: "What would you do differently in production?"
+        next: production
+      - text: "What's the next challenge?"
+        next: tease_next
+      - text: "Thanks, Marcus!"
+        next: end
+        action: end
+
+  production:
+    id: production
+    speaker: Marcus
+    text: "In production, you'd also add per-client rate limits using API keys, sliding window counters for smoother limiting, and response headers telling clients how many requests they have left. But the token bucket is the foundation."
+    choices:
+      - text: "What's next?"
+        next: tease_next
+      - text: "Good to know. See you!"
+        next: end
+        action: end
+
+  tease_next:
+    id: tease_next
+    speaker: Marcus
+    text: "You've built load balancers, caches, database replicas, and now rate limiters. You're building a real toolkit for system design. Keep going - there's always more to learn."
+    choices:
+      - text: "I'll keep at it!"
+        next: end
+        action: end
+
+  end:
+    id: end
+    speaker: Marcus
+    text: "Solid engineering work. The API team owes you one."
+    action: end
+startNode: start

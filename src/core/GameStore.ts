@@ -5,6 +5,7 @@ export const CHAPTER_ORDER = [
   '01-load-balancing',
   '02-caching',
   '03-databases',
+  '04-rate-limiting',
 ];
 
 interface GameState {

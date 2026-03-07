@@ -64,6 +64,7 @@ const CHAPTER_CONTEXT: Record<string, string> = {
   '01-load-balancing': 'load balancing and horizontal scaling',
   '02-caching': 'caching strategies, TTL, and cache invalidation',
   '03-databases': 'database read replicas and replication',
+  '04-rate-limiting': 'rate limiting strategies and API protection',
 };
 
 export const DebriefUI: React.FC = () => {

@@ -37,6 +37,7 @@ export const MetricsDashboard: React.FC = () => {
   const stalenessRate = finalMetrics?.stalenessRate;
   const dbReadThroughput = finalMetrics?.dbReadThroughput;
   const replicationLag = finalMetrics?.replicationLag;
+  const rejectionRate = finalMetrics?.rejectionRate;
 
   const metrics: { label: string; value: string; color: string }[] = [
     {
@@ -80,6 +81,15 @@ export const MetricsDashboard: React.FC = () => {
       color: '#33cccc',
     });
   }
+  // Add rejection rate metric if present
+  if (rejectionRate !== undefined) {
+    metrics.push({
+      label: 'Reject Rate',
+      value: `${rejectionRate.toFixed(1)}%`,
+      color: rejectionRate >= 40 && rejectionRate <= 80 ? '#44cc66' : rejectionRate > 80 ? '#ff4444' : '#ccaa44',
+    });
+  }
+
   if (replicationLag !== undefined) {
     metrics.push({
       label: 'Rep. Lag',

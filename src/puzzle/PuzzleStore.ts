@@ -128,6 +128,7 @@ export const usePuzzleStore = create<PuzzleState>((set, get) => ({
       'cache': 'Cache',
       'database': 'Primary DB',
       'read-replica': 'Read Replica',
+      'rate-limiter': 'Rate Limiter',
     };
 
     const fixedNodes: Node[] = puzzleData.fixedComponents.map((fc) => ({

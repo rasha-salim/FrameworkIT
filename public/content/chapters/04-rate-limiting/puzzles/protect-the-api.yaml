@@ -1,0 +1,97 @@
+id: protect-the-api
+title: "Protect the API"
+chapter: 04-rate-limiting
+difficulty: 4
+
+briefing:
+  npc: marcus
+  text: "Our public API is getting hammered with 12,000 req/s but only about 3,000 is legitimate. The 3 web servers can handle 9,000 total but the abusive traffic is pushing them over the edge. Add rate limiters to filter the excess."
+
+fixedComponents:
+  - id: client-pool
+    type: client-pool
+    position: { x: 50, y: 250 }
+    config:
+      requestsPerSecond: 12000
+      distribution: uniform
+  - id: lb-1
+    type: load-balancer
+    position: { x: 250, y: 250 }
+    config:
+      algorithm: round-robin
+  - id: web-1
+    type: web-server
+    position: { x: 650, y: 100 }
+    config:
+      maxRPS: 3000
+      baseLatencyMs: 10
+  - id: web-2
+    type: web-server
+    position: { x: 650, y: 250 }
+    config:
+      maxRPS: 3000
+      baseLatencyMs: 10
+  - id: web-3
+    type: web-server
+    position: { x: 650, y: 400 }
+    config:
+      maxRPS: 3000
+      baseLatencyMs: 10
+
+availableComponents:
+  - type: rate-limiter
+    maxCount: 3
+    costPerUnit: 250
+
+objectives:
+  bronze:
+    - metric: throughput
+      operator: ">="
+      value: 2500
+    - metric: error_rate
+      operator: "<="
+      value: 15
+  silver:
+    - metric: throughput
+      operator: ">="
+      value: 2500
+    - metric: error_rate
+      operator: "<="
+      value: 15
+    - metric: p99_latency
+      operator: "<="
+      value: 250
+    - metric: rejection_rate
+      operator: ">="
+      value: 40
+  gold:
+    - metric: throughput
+      operator: ">="
+      value: 2500
+    - metric: error_rate
+      operator: "<="
+      value: 15
+    - metric: p99_latency
+      operator: "<="
+      value: 250
+    - metric: rejection_rate
+      operator: ">="
+      value: 40
+    - metric: rejection_rate
+      operator: "<="
+      value: 80
+    - metric: total_cost
+      operator: "<="
+      value: 500
+
+simulation:
+  durationSeconds: 60
+  tickRateMs: 100
+
+debrief:
+  - id: rate-limit-strategy
+    question: "How did you decide on the max tokens and refill rate for your rate limiters? What happens if you set the refill rate too low or too high?"
+    hint: "The refill rate controls sustained throughput. Too low blocks legitimate traffic. Too high lets abusive traffic through to overwhelm servers."
+  - id: protection-vs-access
+    question: "What is the fundamental trade-off in rate limiting, and how did your configuration balance protecting servers vs. preserving access for legitimate users?"
+    hint: "Think about the tension between rejecting enough traffic to protect servers (rejection >= 40%) and not rejecting so much that real users get blocked (rejection <= 80%)."

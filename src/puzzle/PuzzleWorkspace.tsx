@@ -25,6 +25,7 @@ import { WebServerNode } from './nodes/WebServerNode';
 import { CacheNode } from './nodes/CacheNode';
 import { DatabaseNode } from './nodes/DatabaseNode';
 import { ReadReplicaNode } from './nodes/ReadReplicaNode';
+import { RateLimiterNode } from './nodes/RateLimiterNode';
 
 const COMPONENT_LABELS: Record<string, string> = {
   'client-pool': 'Clients',
@@ -33,6 +34,7 @@ const COMPONENT_LABELS: Record<string, string> = {
   'cache': 'Cache',
   'database': 'Primary DB',
   'read-replica': 'Read Replica',
+  'rate-limiter': 'Rate Limiter',
 };
 
 function getComponentLabel(type: string): string {
@@ -103,6 +105,7 @@ export const PuzzleWorkspace: React.FC = () => {
       'cache': CacheNode,
       'database': DatabaseNode,
       'read-replica': ReadReplicaNode,
+      'rate-limiter': RateLimiterNode,
     }),
     []
   );

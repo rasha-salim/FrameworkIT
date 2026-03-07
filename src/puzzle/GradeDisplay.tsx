@@ -42,6 +42,7 @@ const METRIC_LABELS: Record<string, string> = {
   db_read_throughput: 'DB Reads',
   db_write_throughput: 'DB Writes',
   replication_lag: 'Rep. Lag',
+  rejection_rate: 'Reject Rate',
 };
 
 function getMetricValue(metrics: SimulationMetrics, metric: string): number {
@@ -58,6 +59,7 @@ function getMetricValue(metrics: SimulationMetrics, metric: string): number {
     case 'db_read_throughput': return metrics.dbReadThroughput ?? 0;
     case 'db_write_throughput': return metrics.dbWriteThroughput ?? 0;
     case 'replication_lag': return metrics.replicationLag ?? 0;
+    case 'rejection_rate': return metrics.rejectionRate ?? 0;
     default: return 0;
   }
 }
@@ -71,6 +73,7 @@ function formatMetric(metric: string, value: number): string {
     case 'error_rate':
     case 'cache_hit_rate':
     case 'staleness_rate':
+    case 'rejection_rate':
       return `${value.toFixed(1)}%`;
     case 'p50_latency':
     case 'p95_latency':

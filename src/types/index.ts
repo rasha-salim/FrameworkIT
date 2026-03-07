@@ -54,6 +54,10 @@ export interface ComponentConfig {
   readWriteRatio?: number;
   // Replication
   replicationLagMs?: number;
+  // Rate limiter config
+  rateLimitStrategy?: string;
+  maxTokens?: number;
+  refillRate?: number;
 }
 
 export interface FixedComponent {
@@ -116,6 +120,8 @@ export interface SimulationMetrics {
   dbReadThroughput?: number;
   dbWriteThroughput?: number;
   replicationLag?: number;
+  // Ch 4: Rate limiting metrics
+  rejectionRate?: number;
 }
 
 export interface TickMetrics {

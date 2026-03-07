@@ -79,6 +79,8 @@ export class PuzzleValidator {
         return metrics.dbWriteThroughput ?? 0;
       case 'replication_lag':
         return metrics.replicationLag ?? 0;
+      case 'rejection_rate':
+        return metrics.rejectionRate ?? 0;
       default:
         return 0;
     }

@@ -1,0 +1,6 @@
+id: 04-rate-limiting
+title: "Protect the API"
+description: "The company launched a public API and it went viral. Scrapers and bots are flooding the system with abusive traffic. Time to add rate limiting to protect the backend."
+npc: marcus
+puzzles:
+  - protect-the-api

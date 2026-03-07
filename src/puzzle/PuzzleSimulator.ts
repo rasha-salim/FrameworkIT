@@ -7,6 +7,7 @@ import { WebServerComponent } from './components/WebServer';
 import { CacheComponent } from './components/Cache';
 import { DatabaseComponent } from './components/Database';
 import { ReadReplicaComponent } from './components/ReadReplica';
+import { RateLimiterComponent } from './components/RateLimiter';
 import { usePuzzleStore } from './PuzzleStore';
 import { PuzzleValidator } from './PuzzleValidator';
 
@@ -64,6 +65,7 @@ export class PuzzleSimulator {
         let dbReadThroughput: number | undefined;
         let dbWriteThroughput: number | undefined;
         let replicationLag: number | undefined;
+        let rejectionRate: number | undefined;
 
         for (const comp of components) {
           if (comp.type === 'cache') {
@@ -81,6 +83,13 @@ export class PuzzleSimulator {
             };
             dbReadThroughput = ds.readCount / puzzleData.simulation.durationSeconds;
             dbWriteThroughput = ds.writeCount / puzzleData.simulation.durationSeconds;
+          }
+          if (comp.type === 'rate-limiter') {
+            const rls = comp.state as typeof comp.state & {
+              allowedCount: number; rejectedCount: number;
+            };
+            const totalRl = rls.allowedCount + rls.rejectedCount;
+            rejectionRate = totalRl > 0 ? (rls.rejectedCount / totalRl) * 100 : 0;
           }
           if (comp.type === 'read-replica') {
             const rs = comp.state as typeof comp.state & {
@@ -106,6 +115,7 @@ export class PuzzleSimulator {
           dbReadThroughput,
           dbWriteThroughput,
           replicationLag,
+          rejectionRate,
         };
 
         const grade = PuzzleValidator.evaluate(finalMetrics, puzzleData.objectives);
@@ -259,6 +269,15 @@ export class PuzzleSimulator {
           break;
         }
 
+        case 'rate-limiter':
+          component = new RateLimiterComponent(
+            node.id,
+            (node.data.maxTokens as number) || 500,
+            (node.data.refillRate as number) || 200,
+            tickRateMs
+          );
+          break;
+
         default:
           continue;
       }
@@ -395,6 +414,37 @@ export class PuzzleSimulator {
       return results;
     }
 
+    if (component.type === 'rate-limiter') {
+      const processed = component.process(requests, tick);
+
+      // Split: allowed requests go downstream, rejected are done (already marked dropped)
+      const allowed = processed.filter((r) => !r.dropped);
+      const rejected = processed.filter((r) => r.dropped);
+
+      let results = [...rejected];
+
+      if (allowed.length > 0) {
+        const downstreamTargets = component.getConnectedTargets();
+        if (downstreamTargets.length > 0) {
+          for (const targetId of downstreamTargets) {
+            const target = componentMap.get(targetId);
+            if (target) {
+              const downstream = this.processComponent(target, allowed, tick, componentMap, edges);
+              results = results.concat(downstream);
+            } else {
+              allowed.forEach((r) => { r.dropped = true; });
+              results = results.concat(allowed);
+            }
+          }
+        } else {
+          allowed.forEach((r) => { r.dropped = true; });
+          results = results.concat(allowed);
+        }
+      }
+
+      return results;
+    }
+
     if (component.type === 'web-server' || component.type === 'database' || component.type === 'read-replica') {
       const processed = component.process(requests, tick);
 
@@ -457,6 +507,16 @@ export class PuzzleSimulator {
         extraData.readCount = dbState.readCount;
         extraData.writeCount = dbState.writeCount;
         extraData.currentConnections = dbState.currentConnections;
+      }
+
+      // Rate limiter-specific visuals
+      if (comp.type === 'rate-limiter') {
+        const rlState = comp.state as typeof comp.state & {
+          allowedCount: number; rejectedCount: number; currentTokens: number;
+        };
+        const totalRl = rlState.allowedCount + rlState.rejectedCount;
+        extraData.rejectRate = totalRl > 0 ? (rlState.rejectedCount / totalRl) * 100 : 0;
+        extraData.currentTokens = rlState.currentTokens;
       }
 
       // Read replica-specific visuals
