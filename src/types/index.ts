@@ -1,4 +1,6 @@
-export type GamePhase = 'exploring' | 'dialogue' | 'puzzle' | 'results' | 'debrief';
+export type GamePhase = 'track-select' | 'exploring' | 'dialogue' | 'puzzle' | 'results' | 'debrief';
+
+export type TrackId = 'system-design' | 'software-design';
 
 export interface DebriefQuestion {
   id: string;

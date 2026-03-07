@@ -1,5 +1,5 @@
 import { create } from 'zustand';
-import type { GamePhase } from '../types';
+import type { GamePhase, TrackId } from '../types';
 
 export const CHAPTER_ORDER = [
   '01-load-balancing',
@@ -10,6 +10,7 @@ export const CHAPTER_ORDER = [
 
 interface GameState {
   phase: GamePhase;
+  selectedTrack: TrackId | null;
   currentChapter: string;
   currentPuzzleId: string | null;
   puzzleCompleted: boolean;
@@ -17,6 +18,8 @@ interface GameState {
   completedChapters: string[];
 
   setPhase: (phase: GamePhase) => void;
+  selectTrack: (track: TrackId) => void;
+  backToTrackSelect: () => void;
   setCurrentChapter: (chapter: string) => void;
   setCurrentPuzzleId: (id: string | null) => void;
   setPuzzleCompleted: (completed: boolean) => void;
@@ -49,12 +52,20 @@ function loadBestGrade(chapter: string): string | null {
   return localStorage.getItem(`puzzle-best-grade-${chapter}`);
 }
 
+function loadSelectedTrack(): TrackId | null {
+  const stored = localStorage.getItem('selected-track');
+  if (stored === 'system-design' || stored === 'software-design') return stored;
+  return null;
+}
+
 const _completedChapters = loadCompletedChapters();
 const _currentChapter = deriveCurrentChapter(_completedChapters);
 const _bestGrade = loadBestGrade(_currentChapter);
+const _selectedTrack = loadSelectedTrack();
 
 export const useGameStore = create<GameState>((set, get) => ({
-  phase: 'exploring',
+  phase: _selectedTrack ? 'exploring' : 'track-select',
+  selectedTrack: _selectedTrack,
   currentChapter: _currentChapter,
   currentPuzzleId: null,
   puzzleCompleted: _bestGrade !== null,
@@ -62,6 +73,17 @@ export const useGameStore = create<GameState>((set, get) => ({
   completedChapters: _completedChapters,
 
   setPhase: (phase) => set({ phase }),
+
+  selectTrack: (track) => {
+    localStorage.setItem('selected-track', track);
+    set({ selectedTrack: track, phase: 'exploring' });
+  },
+
+  backToTrackSelect: () => {
+    localStorage.removeItem('selected-track');
+    set({ selectedTrack: null, phase: 'track-select' });
+  },
+
   setCurrentChapter: (chapter) => set({ currentChapter: chapter }),
   setCurrentPuzzleId: (id) => set({ currentPuzzleId: id }),
   setPuzzleCompleted: (completed) => set({ puzzleCompleted: completed }),

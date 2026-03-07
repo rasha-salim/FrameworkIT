@@ -7,6 +7,7 @@ import { App } from './ui/App';
 import { AuthGuard } from './auth/AuthGuard';
 import { DialogueEngine } from './dialogue/DialogueEngine';
 import { useAuthStore } from './auth/AuthStore';
+import { useGameStore } from './core/GameStore';
 
 // Initialize dialogue system (sets up EventBus listeners)
 DialogueEngine.init();
@@ -47,18 +48,32 @@ if (uiRoot) {
   );
 }
 
+// Start Phaser only when player is authenticated AND a track is selected
+function tryStartPhaser() {
+  const auth = useAuthStore.getState();
+  const game = useGameStore.getState();
+  if (auth.playerName && game.selectedTrack === 'system-design') {
+    startPhaserGame();
+    return true;
+  }
+  return false;
+}
+
 // Initialize auth store and start game when player name is available
 useAuthStore.getState().initialize();
-const { playerName } = useAuthStore.getState();
 
-if (playerName) {
-  startPhaserGame();
-} else {
-  // Wait for player to enter their name
-  const unsubscribe = useAuthStore.subscribe((state, prevState) => {
-    if (state.playerName && !prevState.playerName) {
-      startPhaserGame();
-      unsubscribe();
+if (!tryStartPhaser()) {
+  // Watch for auth + track selection to both be ready
+  const unsubAuth = useAuthStore.subscribe(() => {
+    if (tryStartPhaser()) {
+      unsubAuth();
+      unsubGame();
+    }
+  });
+  const unsubGame = useGameStore.subscribe(() => {
+    if (tryStartPhaser()) {
+      unsubAuth();
+      unsubGame();
     }
   });
 }

@@ -6,6 +6,7 @@ import { DialogueUI } from '../dialogue/DialogueUI';
 import { PuzzleWorkspace } from '../puzzle/PuzzleWorkspace';
 import { GradeDisplay } from '../puzzle/GradeDisplay';
 import { DebriefUI } from '../puzzle/DebriefUI';
+import { TrackSelectScreen } from './TrackSelectScreen';
 
 const CHAPTER_NPC: Record<string, string> = {
   '01-load-balancing': 'Sarah',
@@ -26,6 +27,8 @@ export const App: React.FC = () => {
   const currentChapter = useGameStore((s) => s.currentChapter);
   const puzzleCompleted = useGameStore((s) => s.puzzleCompleted);
   const completedChapters = useGameStore((s) => s.completedChapters);
+  const selectedTrack = useGameStore((s) => s.selectedTrack);
+  const backToTrackSelect = useGameStore((s) => s.backToTrackSelect);
   const playerName = useAuthStore((s) => s.playerName);
   const clearPlayer = useAuthStore((s) => s.clearPlayer);
   const prevPhase = useRef(phase);
@@ -41,6 +44,10 @@ export const App: React.FC = () => {
   const npcName = CHAPTER_NPC[currentChapter] || 'the NPC';
   const bestGradeKey = `puzzle-best-grade-${currentChapter}`;
   const bestGrade = typeof window !== 'undefined' ? localStorage.getItem(bestGradeKey) : null;
+
+  if (phase === 'track-select') {
+    return <TrackSelectScreen />;
+  }
 
   return (
     <>
@@ -63,6 +70,21 @@ export const App: React.FC = () => {
           }}
         >
           <span style={{ fontSize: 11, color: '#6688aa' }}>{playerName}</span>
+          <button
+            onClick={backToTrackSelect}
+            style={{
+              background: 'rgba(68, 136, 255, 0.12)',
+              border: '1px solid #4488ff44',
+              color: '#88bbff',
+              padding: '4px 10px',
+              borderRadius: 4,
+              cursor: 'pointer',
+              fontSize: 11,
+              fontFamily: 'monospace',
+            }}
+          >
+            Tracks
+          </button>
           <button
             onClick={clearPlayer}
             style={{
