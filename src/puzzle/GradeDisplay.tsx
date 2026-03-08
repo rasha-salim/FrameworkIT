@@ -106,11 +106,15 @@ export const GradeDisplay: React.FC = () => {
   const { finalMetrics, grade } = simState;
   const config = GRADE_CONFIG[grade];
 
+  const currentChapter = useGameStore((s) => s.currentChapter);
+
   const handleBackToWorld = () => {
     const passed = grade !== 'none';
 
     if (passed) {
-      // Go to debrief step before returning to world
+      // CHECKPOINT 1: Save grade immediately on puzzle pass
+      useGameStore.getState().saveGrade(currentChapter, grade);
+      // Go to debrief step
       useGameStore.getState().setPhase('debrief');
     } else {
       // Failed -- go straight back to exploring

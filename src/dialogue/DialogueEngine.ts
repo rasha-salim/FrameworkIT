@@ -45,6 +45,7 @@ export class DialogueEngine {
     const gameState = useGameStore.getState();
     const currentChapter = gameState.currentChapter;
     const puzzleCompleted = gameState.puzzleCompleted;
+    const debriefCompleted = gameState.debriefCompleted;
 
     // Get the dialogue config for this NPC in this chapter
     const chapterConfig = CHAPTER_NPC_MAP[currentChapter];
@@ -61,8 +62,15 @@ export class DialogueEngine {
     try {
       let data: DialogueData;
 
-      if (puzzleCompleted && this.isCurrentChapterNPC(npcId, currentChapter)) {
-        // This NPC's puzzle is done - show post-completion dialogue
+      if (puzzleCompleted && !debriefCompleted && this.isCurrentChapterNPC(npcId, currentChapter)) {
+        // Puzzle passed but debrief not done -- offer to start debrief
+        data = this.buildDebriefPromptDialogue(npcId, npcConfig);
+        useDialogueStore.getState().startDialogue(data);
+        return;
+      }
+
+      if (puzzleCompleted && debriefCompleted && this.isCurrentChapterNPC(npcId, currentChapter)) {
+        // Both done - show post-completion dialogue
         data = await loadDialogue(currentChapter, npcConfig.dialogue);
         if (data.nodes['post_complete']) {
           data = { ...data, startNode: 'post_complete' };
@@ -151,9 +159,46 @@ export class DialogueEngine {
     return null;
   }
 
+  private buildDebriefPromptDialogue(npcId: string, _config: ChapterDialogueConfig): DialogueData {
+    const speaker = npcId === 'sarah' ? 'Sarah' : 'Marcus';
+    return {
+      id: 'debrief-prompt',
+      startNode: 'start',
+      nodes: {
+        start: {
+          id: 'start',
+          speaker,
+          text: "You did great on that puzzle! But before we move on, I'd like you to reflect on your design decisions. Ready for the debrief?",
+          choices: [
+            { text: "Let's do the debrief.", next: 'open_debrief', action: 'openDebrief' },
+            { text: "Not right now.", next: 'later', action: 'end' },
+          ],
+        },
+        open_debrief: {
+          id: 'open_debrief',
+          speaker,
+          text: "Great, let's go over what you built.",
+          action: 'openDebrief',
+        },
+        later: {
+          id: 'later',
+          speaker,
+          text: "No worries, come back when you're ready. We need to debrief before moving on to the next challenge.",
+          action: 'end',
+        },
+      },
+    };
+  }
+
   static handleAction(action: string): void {
     const gameState = useGameStore.getState();
     const currentChapter = gameState.currentChapter;
+
+    if (action === 'openDebrief') {
+      useDialogueStore.getState().endDialogue();
+      gameState.setPhase('debrief');
+      return;
+    }
 
     if (action === 'startPuzzle') {
       // Dynamically resolve puzzle ID from current chapter config
@@ -165,6 +210,7 @@ export class DialogueEngine {
         '01-load-balancing': 'sarah',
         '02-caching': 'marcus',
         '03-databases': 'sarah',
+        '04-rate-limiting': 'marcus',
       };
       const primaryNpc = primaryNPCs[currentChapter];
       const config = chapterConfig[primaryNpc];
@@ -184,6 +230,7 @@ export class DialogueEngine {
         '01-load-balancing': 'sarah',
         '02-caching': 'marcus',
         '03-databases': 'sarah',
+        '04-rate-limiting': 'marcus',
       };
       const primaryNpc = primaryNPCs[currentChapter];
       const config = chapterConfig[primaryNpc];

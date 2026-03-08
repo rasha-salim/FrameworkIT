@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { usePuzzleStore } from './PuzzleStore';
 import { useGameStore } from '../core/GameStore';
 import { EventBus } from '../core/EventBus';
-import type { DebriefQuestion, Grade } from '../types';
+import type { DebriefQuestion } from '../types';
 
 const LLM_API_KEY = (import.meta.env.VITE_LLM_API_KEY as string | undefined) || '';
 const LLM_MODEL = (import.meta.env.VITE_LLM_MODEL as string | undefined) || 'claude-haiku-4-5-20251001';
@@ -117,17 +117,8 @@ export const DebriefUI: React.FC = () => {
     }
     localStorage.setItem(`debrief-${currentChapter}`, JSON.stringify(answers));
 
-    // Save grade and transition to exploring
-    const passed = grade !== 'none';
-    useGameStore.getState().setPuzzleCompleted(passed);
-    if (passed) {
-      const gradeKey = `puzzle-best-grade-${currentChapter}`;
-      const bestGrade = localStorage.getItem(gradeKey);
-      const gradeRank: Record<string, number> = { none: 0, bronze: 1, silver: 2, gold: 3 };
-      if (!bestGrade || gradeRank[grade] > (gradeRank[bestGrade as Grade] || 0)) {
-        localStorage.setItem(gradeKey, grade);
-      }
-    }
+    // CHECKPOINT 2: Mark debrief completed (grade already saved in GradeDisplay)
+    useGameStore.getState().markDebriefCompleted(currentChapter);
 
     useGameStore.getState().setPhase('exploring');
     useGameStore.getState().setCurrentPuzzleId(null);

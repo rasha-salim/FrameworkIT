@@ -26,6 +26,7 @@ export const App: React.FC = () => {
   const phase = useGameStore((s) => s.phase);
   const currentChapter = useGameStore((s) => s.currentChapter);
   const puzzleCompleted = useGameStore((s) => s.puzzleCompleted);
+  const debriefCompleted = useGameStore((s) => s.debriefCompleted);
   const completedChapters = useGameStore((s) => s.completedChapters);
   const selectedTrack = useGameStore((s) => s.selectedTrack);
   const backToTrackSelect = useGameStore((s) => s.backToTrackSelect);
@@ -121,8 +122,10 @@ export const App: React.FC = () => {
             Ch {chapterNum}: {chapterName}
           </div>
           <div style={{ fontSize: 14, color: '#aabbcc', marginTop: 6 }}>
-            {puzzleCompleted
-              ? `Puzzle complete! Talk to ${npcName} for next steps.`
+            {puzzleCompleted && debriefCompleted
+              ? `Chapter complete! Talk to ${npcName} to advance.`
+              : puzzleCompleted && !debriefCompleted
+              ? `Puzzle passed! Talk to ${npcName} to complete the debrief.`
               : `Approach ${npcName} and press [E] to talk`}
           </div>
           {puzzleCompleted && bestGrade && (

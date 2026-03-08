@@ -34,8 +34,11 @@ export const useAuthStore = create<AuthState>((set) => ({
       const key = localStorage.key(i);
       if (key && (
         key.startsWith('puzzle-best-grade') ||
+        key.startsWith('debrief-completed-') ||
+        key.startsWith('debrief-') ||
         key === 'completed-chapters' ||
-        key === 'current-chapter'
+        key === 'current-chapter' ||
+        key === 'selected-track'
       )) {
         keysToRemove.push(key);
       }
