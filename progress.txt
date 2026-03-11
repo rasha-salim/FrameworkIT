@@ -265,3 +265,82 @@ FILES CREATED/MODIFIED (full list):
 - public/content/chapters/03-databases/dialogues/sarah-db-intro.yaml [NEW]
 - public/content/chapters/03-databases/puzzles/scale-reads-with-replicas.yaml [NEW]
 - public/content/components/load-balancer.yaml, web-server.yaml
+
+------------------------------------------------------
+
+CHAPTER 4: RATE LIMITING (2026-03-11) [COMPLETE]
+- RateLimiterComponent (RateLimiter.ts): token bucket algorithm, maxTokens, refillRate
+- RateLimiterNode (RateLimiterNode.tsx): crimson #ff4466, token fill bar, reject rate
+- Puzzle: protect-the-api.yaml (12,000 req/s, 3 web servers, add rate limiters)
+- Marcus dialogue: marcus-rate-limit-intro.yaml (token bucket explanation, protection-vs-access tradeoff)
+- Objectives: bronze (throughput>=2500, error<=15), silver (+p99<=250, rejection>=40), gold (+cost<=500, rejection<=80)
+- All game flow wiring updated (GameStore, DialogueEngine, App, WorldScene, DebriefUI)
+
+TRACK SELECTION SCREEN (2026-03-11) [COMPLETE]
+- TrackSelectScreen.tsx: System Design (active) and Software Design (Coming Soon)
+- Track persisted in localStorage, Phaser only starts for system-design track
+- GameStore: selectTrack(), backToTrackSelect(), TrackId type
+
+PROGRESS PERSISTENCE FIX (2026-03-11) [COMPLETE]
+- Two-checkpoint system: Checkpoint 1 = puzzle pass (grade saved in GradeDisplay), Checkpoint 2 = debrief completion
+- DialogueEngine offers debrief when puzzle passed but debrief not done
+- Grade and debrief status persisted independently in localStorage
+
+CHAPTERS 5-6: SESSIONS AND PARTITIONING (2026-03-11) [COMPLETE]
+- Chapter 5: Sessions - "The Lost Cart" (NPC: Sarah)
+  - SessionStoreComponent (SessionStore.ts): shared session store, tracks userId->server mapping, lookup latency
+  - SessionStoreNode (SessionStoreNode.tsx): teal-green #22ccaa, session fill bar, consistency rate
+  - Puzzle: the-lost-cart.yaml (8,000 req/s, 3 web servers, add session store)
+  - Sarah dialogue: sarah-sessions-intro.yaml (sticky sessions vs shared store, stateless servers)
+  - Objectives: bronze (session_consistency>=80), silver (>=90, p99<=200), gold (>=95, p99<=150, cost<=300)
+  - New metric: session_consistency
+
+- Chapter 6: Partitioning - "Going Global" (NPC: Marcus)
+  - ShardRouterComponent (ShardRouter.ts): distributes to DB shards, hash/geographic strategy, balance calculation
+  - ShardRouterNode (ShardRouterNode.tsx): warm orange #dd8844, balance bar, routed count
+  - Puzzle: going-global.yaml (10,000 req/s, 3 web servers, add shard router + databases)
+  - Marcus dialogue: marcus-partitioning-intro.yaml (partitioning strategies, shard balance importance)
+  - Objectives: bronze (throughput>=2000, error<=15), silver (+shard_balance>=70, p99<=300), gold (+balance>=85, p99<=200, cost<=2400)
+  - New metric: shard_balance
+
+- Updated ch4 post-completion dialogue to tease ch5 (sessions)
+- All game flow wiring: GameStore CHAPTER_ORDER, DialogueEngine (all primaryNPCs maps), App.tsx, WorldScene, DebriefUI
+- TypeScript: zero errors
+
+NEW FILES:
+- src/puzzle/components/SessionStore.ts
+- src/puzzle/components/ShardRouter.ts
+- src/puzzle/nodes/SessionStoreNode.tsx
+- src/puzzle/nodes/ShardRouterNode.tsx
+- public/content/chapters/05-sessions/chapter.yaml
+- public/content/chapters/05-sessions/dialogues/sarah-sessions-intro.yaml
+- public/content/chapters/05-sessions/puzzles/the-lost-cart.yaml
+- public/content/chapters/06-partitioning/chapter.yaml
+- public/content/chapters/06-partitioning/dialogues/marcus-partitioning-intro.yaml
+- public/content/chapters/06-partitioning/puzzles/going-global.yaml
+
+MODIFIED FILES:
+- src/types/index.ts (ComponentConfig: maxSessions, lookupLatencyMs, partitionStrategy, numPartitions; SimulationMetrics: sessionConsistency, shardBalance)
+- src/puzzle/components/types.ts (SimRequest: userId, sessionConsistent, shardKey)
+- src/puzzle/PuzzleSimulator.ts (build, route, metrics, visuals for both new components)
+- src/puzzle/PuzzleValidator.ts (session_consistency, shard_balance cases)
+- src/puzzle/PuzzleWorkspace.tsx (nodeTypes, labels)
+- src/puzzle/ComponentPalette.tsx (palette items, defaults, xPositions)
+- src/puzzle/PuzzleStore.ts (labelMap)
+- src/puzzle/GradeDisplay.tsx (metric labels, value, format)
+- src/puzzle/MetricsDashboard.tsx (session consistency, shard balance display)
+- src/core/GameStore.ts (CHAPTER_ORDER +2)
+- src/dialogue/DialogueEngine.ts (CHAPTER_NPC_MAP +2, all primaryNPCs maps +2)
+- src/ui/App.tsx (CHAPTER_NPC +2, CHAPTER_NUMBER +2)
+- src/scenes/WorldScene.ts (Marcus visibility for ch5, ch6)
+- src/puzzle/DebriefUI.tsx (CHAPTER_CONTEXT +2)
+- public/content/chapters/04-rate-limiting/dialogues/marcus-rate-limit-intro.yaml (tease_next updated for ch5)
+
+COMMIT MESSAGE:
+feat: add chapters 5 (sessions) and 6 (partitioning) with session store and shard router components
+
+NEXT STEPS:
+- End-to-end test full Ch1->Ch6 game loop
+- Verify session store puzzle mechanics (userId assignment in ClientPool may need enhancement)
+- Verify shard router puzzle mechanics (balance calculation with real traffic)
+- Software Design track implementation (deferred)

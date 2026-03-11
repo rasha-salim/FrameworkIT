@@ -1,0 +1,6 @@
+id: 06-partitioning
+title: "Going Global"
+description: "Yalla Delivery is now live in multiple cities. The single database can't handle the combined load. Time to partition the data across regional database clusters."
+npc: marcus
+puzzles:
+  - going-global

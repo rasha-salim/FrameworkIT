@@ -45,6 +45,18 @@ const PALETTE_ITEMS: PaletteItem[] = [
     color: '#ff4466',
     description: 'Filters excess traffic',
   },
+  {
+    type: 'session-store',
+    label: 'Session Store',
+    color: '#22ccaa',
+    description: 'Shared session state (Redis)',
+  },
+  {
+    type: 'shard-router',
+    label: 'Shard Router',
+    color: '#dd8844',
+    description: 'Routes to database shards',
+  },
 ];
 
 export const ComponentPalette: React.FC = () => {
@@ -73,6 +85,8 @@ export const ComponentPalette: React.FC = () => {
       'database': 850,
       'read-replica': 1050,
       'rate-limiter': 420,
+      'session-store': 480,
+      'shard-router': 550,
     };
 
     const defaults: Record<string, Record<string, unknown>> = {
@@ -82,6 +96,8 @@ export const ComponentPalette: React.FC = () => {
       'database': { maxRPS: 800, readLatencyMs: 50, writeLatencyMs: 100, maxConnections: 100, readCount: 0, writeCount: 0, currentConnections: 0 },
       'read-replica': { maxRPS: 800, readLatencyMs: 50, replicationLagMs: 100 },
       'rate-limiter': { maxTokens: 500, refillRate: 200 },
+      'session-store': { maxSessions: 10000, lookupLatencyMs: 3, currentSessions: 0, consistencyRate: 0 },
+      'shard-router': { numPartitions: 3, partitionStrategy: 'hash', shardBalance: 0, totalRouted: 0 },
     };
 
     const newNode = {

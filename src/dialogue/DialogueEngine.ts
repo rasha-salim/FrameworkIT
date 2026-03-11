@@ -27,6 +27,14 @@ const CHAPTER_NPC_MAP: Record<string, Record<string, ChapterDialogueConfig>> = {
     marcus: { dialogue: 'marcus-rate-limit-intro', puzzleId: 'protect-the-api' },
     sarah: { dialogue: 'sarah-db-intro', puzzleId: 'scale-reads-with-replicas' },
   },
+  '05-sessions': {
+    sarah: { dialogue: 'sarah-sessions-intro', puzzleId: 'the-lost-cart' },
+    marcus: { dialogue: 'marcus-rate-limit-intro', puzzleId: 'protect-the-api' },
+  },
+  '06-partitioning': {
+    marcus: { dialogue: 'marcus-partitioning-intro', puzzleId: 'going-global' },
+    sarah: { dialogue: 'sarah-sessions-intro', puzzleId: 'the-lost-cart' },
+  },
 };
 
 export class DialogueEngine {
@@ -113,6 +121,8 @@ export class DialogueEngine {
       '02-caching': 'marcus',
       '03-databases': 'sarah',
       '04-rate-limiting': 'marcus',
+      '05-sessions': 'sarah',
+      '06-partitioning': 'marcus',
     };
     return primaryNPCs[chapter] === npcId;
   }
@@ -132,6 +142,8 @@ export class DialogueEngine {
       '02-caching': 'marcus',
       '03-databases': 'sarah',
       '04-rate-limiting': 'marcus',
+      '05-sessions': 'sarah',
+      '06-partitioning': 'marcus',
     };
 
     for (const [chapter, primaryNpc] of Object.entries(primaryNPCs)) {
@@ -149,6 +161,8 @@ export class DialogueEngine {
       '02-caching': 'marcus',
       '03-databases': 'sarah',
       '04-rate-limiting': 'marcus',
+      '05-sessions': 'sarah',
+      '06-partitioning': 'marcus',
     };
 
     for (const [chapter, primaryNpc] of Object.entries(primaryNPCs)) {

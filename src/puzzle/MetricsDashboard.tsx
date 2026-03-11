@@ -38,6 +38,8 @@ export const MetricsDashboard: React.FC = () => {
   const dbReadThroughput = finalMetrics?.dbReadThroughput;
   const replicationLag = finalMetrics?.replicationLag;
   const rejectionRate = finalMetrics?.rejectionRate;
+  const sessionConsistency = finalMetrics?.sessionConsistency;
+  const shardBalance = finalMetrics?.shardBalance;
 
   const metrics: { label: string; value: string; color: string }[] = [
     {
@@ -87,6 +89,24 @@ export const MetricsDashboard: React.FC = () => {
       label: 'Reject Rate',
       value: `${rejectionRate.toFixed(1)}%`,
       color: rejectionRate >= 40 && rejectionRate <= 80 ? '#44cc66' : rejectionRate > 80 ? '#ff4444' : '#ccaa44',
+    });
+  }
+
+  // Add session consistency metric if present
+  if (sessionConsistency !== undefined) {
+    metrics.push({
+      label: 'Sessions',
+      value: `${sessionConsistency.toFixed(1)}%`,
+      color: sessionConsistency >= 90 ? '#44cc66' : sessionConsistency >= 70 ? '#ccaa44' : '#ff4444',
+    });
+  }
+
+  // Add shard balance metric if present
+  if (shardBalance !== undefined) {
+    metrics.push({
+      label: 'Shard Bal.',
+      value: `${shardBalance.toFixed(1)}%`,
+      color: shardBalance >= 85 ? '#44cc66' : shardBalance >= 60 ? '#ccaa44' : '#ff6644',
     });
   }
 

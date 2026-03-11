@@ -60,6 +60,12 @@ export interface ComponentConfig {
   rateLimitStrategy?: string;
   maxTokens?: number;
   refillRate?: number;
+  // Session store config
+  maxSessions?: number;
+  lookupLatencyMs?: number;
+  // Shard router config
+  partitionStrategy?: string;
+  numPartitions?: number;
 }
 
 export interface FixedComponent {
@@ -124,6 +130,10 @@ export interface SimulationMetrics {
   replicationLag?: number;
   // Ch 4: Rate limiting metrics
   rejectionRate?: number;
+  // Ch 5: Session metrics
+  sessionConsistency?: number;
+  // Ch 6: Partitioning metrics
+  shardBalance?: number;
 }
 
 export interface TickMetrics {

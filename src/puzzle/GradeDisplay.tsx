@@ -43,6 +43,8 @@ const METRIC_LABELS: Record<string, string> = {
   db_write_throughput: 'DB Writes',
   replication_lag: 'Rep. Lag',
   rejection_rate: 'Reject Rate',
+  session_consistency: 'Session Consistency',
+  shard_balance: 'Shard Balance',
 };
 
 function getMetricValue(metrics: SimulationMetrics, metric: string): number {
@@ -60,6 +62,8 @@ function getMetricValue(metrics: SimulationMetrics, metric: string): number {
     case 'db_write_throughput': return metrics.dbWriteThroughput ?? 0;
     case 'replication_lag': return metrics.replicationLag ?? 0;
     case 'rejection_rate': return metrics.rejectionRate ?? 0;
+    case 'session_consistency': return metrics.sessionConsistency ?? 0;
+    case 'shard_balance': return metrics.shardBalance ?? 0;
     default: return 0;
   }
 }
@@ -74,6 +78,8 @@ function formatMetric(metric: string, value: number): string {
     case 'cache_hit_rate':
     case 'staleness_rate':
     case 'rejection_rate':
+    case 'session_consistency':
+    case 'shard_balance':
       return `${value.toFixed(1)}%`;
     case 'p50_latency':
     case 'p95_latency':

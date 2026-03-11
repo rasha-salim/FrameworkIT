@@ -101,11 +101,28 @@ nodes:
   tease_next:
     id: tease_next
     speaker: Marcus
-    text: "You've built load balancers, caches, database replicas, and now rate limiters. You're building a real toolkit for system design. Keep going - there's always more to learn."
+    text: "Nice work. But we have another problem brewing. Users are complaining that their shopping carts keep disappearing when they refresh the page. Sarah thinks it's a session management issue. You should talk to her."
     choices:
-      - text: "I'll keep at it!"
+      - text: "On it!"
+        next: advance
+        action: nextChapter
+      - text: "Let me try this puzzle again first."
+        next: retry
+      - text: "I'll check in later."
         next: end
         action: end
+
+  retry:
+    id: retry
+    speaker: Marcus
+    text: "Go ahead! See if you can hit gold."
+    action: startPuzzle
+
+  advance:
+    id: advance
+    speaker: Marcus
+    text: "Good luck! Session management is trickier than it sounds."
+    action: nextChapter
 
   end:
     id: end

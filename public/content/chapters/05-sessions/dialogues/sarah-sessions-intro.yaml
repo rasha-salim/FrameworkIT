@@ -1,0 +1,142 @@
+id: sarah-sessions-intro
+nodes:
+  start:
+    id: start
+    speaker: Sarah
+    text: "We have a serious UX problem. Users are adding items to their cart, but when they go to checkout, the cart is empty. We're getting hundreds of complaints."
+    choices:
+      - text: "How is that even possible?"
+        next: how_possible
+      - text: "Is the database losing data?"
+        next: not_database
+
+  how_possible:
+    id: how_possible
+    speaker: Sarah
+    text: "Remember our load balancer? It uses round-robin. So Sara adds a burger on Server 1, but her next request goes to Server 2. Server 2 has no idea who Sara is. Her cart lives in Server 1's local memory."
+    choices:
+      - text: "Can we make the load balancer always send her to Server 1?"
+        next: sticky_sessions
+      - text: "We need to move the session data somewhere shared."
+        next: shared_store
+
+  not_database:
+    id: not_database
+    speaker: Sarah
+    text: "The database is fine. The problem is session data. Each server stores sessions in its own memory. When the load balancer sends a user to a different server, that server has no record of their session."
+    choices:
+      - text: "Can we make users always hit the same server?"
+        next: sticky_sessions
+      - text: "What if all servers shared the same session store?"
+        next: shared_store
+
+  sticky_sessions:
+    id: sticky_sessions
+    speaker: Sarah
+    text: "That's called sticky sessions. The load balancer pins each user to one server. It works, but it's fragile. If that server goes down, the user loses everything. And it creates uneven load, some servers get all the heavy users."
+    choices:
+      - text: "What's the better approach?"
+        next: shared_store
+      - text: "So sticky sessions are a trade-off?"
+        next: sticky_tradeoff
+
+  sticky_tradeoff:
+    id: sticky_tradeoff
+    speaker: Sarah
+    text: "Exactly. Simplicity vs. resilience. Sticky sessions are easy to set up but create single points of failure per user. The better approach is to externalize the session entirely."
+    next: shared_store
+
+  shared_store:
+    id: shared_store
+    speaker: Sarah
+    text: "A shared session store like Redis. Every server reads and writes sessions from the same external store. Now it doesn't matter which server handles the request, they all see the same session data."
+    choices:
+      - text: "But doesn't that add latency?"
+        next: latency_cost
+      - text: "That makes the servers stateless!"
+        next: stateless
+
+  latency_cost:
+    id: latency_cost
+    speaker: Sarah
+    text: "It does. Every request now has an extra network hop to Redis, typically 1-5ms. But that's a small price for consistent sessions. The key principle: servers should never store user data locally."
+    next: stateless
+
+  stateless:
+    id: stateless
+    speaker: Sarah
+    text: "Exactly. A stateless server is a true clone. Any server can handle any request because they're all identical. This is what makes horizontal scaling actually work."
+    choices:
+      - text: "Let me try setting it up!"
+        next: start_puzzle
+      - text: "What should I watch out for?"
+        next: watch_out
+
+  watch_out:
+    id: watch_out
+    speaker: Sarah
+    text: "Keep the lookup latency low, it adds up on every request. And make sure session consistency stays high. If users hit servers that don't check the session store, they'll get inconsistent experiences."
+    next: start_puzzle
+
+  start_puzzle:
+    id: start_puzzle
+    speaker: Sarah
+    text: "Here's the setup. Users are sending 8,000 requests per second through a load balancer to three web servers. Add a session store so all servers share session state. Keep latency low and consistency high!"
+    action: startPuzzle
+
+  post_complete:
+    id: post_complete
+    speaker: Sarah
+    text: "The carts are working now! Users can browse, add items, and checkout without losing their session. This is why stateless architecture matters."
+    choices:
+      - text: "What about session store failure?"
+        next: failure
+      - text: "What's the next challenge?"
+        next: tease_next
+      - text: "Thanks, Sarah!"
+        next: end
+        action: end
+
+  failure:
+    id: failure
+    speaker: Sarah
+    text: "Good question. If Redis goes down, every server loses access to sessions. That's a new single point of failure. In production, you'd run Redis with replication and automatic failover. But that's a lesson for another day."
+    choices:
+      - text: "What's next?"
+        next: tease_next
+      - text: "Makes sense. See you!"
+        next: end
+        action: end
+
+  tease_next:
+    id: tease_next
+    speaker: Sarah
+    text: "Our database is struggling. We're now live in multiple cities and the single database can't handle queries from all regions. Marcus has an idea about splitting the data. You should talk to him."
+    choices:
+      - text: "On it!"
+        next: advance
+        action: nextChapter
+      - text: "Let me try this puzzle again first."
+        next: retry
+      - text: "I'll check in later."
+        next: end
+        action: end
+
+  retry:
+    id: retry
+    speaker: Sarah
+    text: "Go for it! See if you can get a better grade."
+    action: startPuzzle
+
+  advance:
+    id: advance
+    speaker: Sarah
+    text: "Good luck! Partitioning is a big topic."
+    action: nextChapter
+
+  end:
+    id: end
+    speaker: Sarah
+    text: "Great work on the session problem. The key takeaway: servers should be stateless clones."
+    action: end
+startNode: start

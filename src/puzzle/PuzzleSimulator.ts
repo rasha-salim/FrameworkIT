@@ -8,6 +8,8 @@ import { CacheComponent } from './components/Cache';
 import { DatabaseComponent } from './components/Database';
 import { ReadReplicaComponent } from './components/ReadReplica';
 import { RateLimiterComponent } from './components/RateLimiter';
+import { SessionStoreComponent } from './components/SessionStore';
+import { ShardRouterComponent } from './components/ShardRouter';
 import { usePuzzleStore } from './PuzzleStore';
 import { PuzzleValidator } from './PuzzleValidator';
 
@@ -66,6 +68,8 @@ export class PuzzleSimulator {
         let dbWriteThroughput: number | undefined;
         let replicationLag: number | undefined;
         let rejectionRate: number | undefined;
+        let sessionConsistency: number | undefined;
+        let shardBalance: number | undefined;
 
         for (const comp of components) {
           if (comp.type === 'cache') {
@@ -97,6 +101,18 @@ export class PuzzleSimulator {
             };
             replicationLag = rs.replicationLagTicks * puzzleData.simulation.tickRateMs;
           }
+          if (comp.type === 'session-store') {
+            const ss = comp.state as typeof comp.state & {
+              consistentRequests: number; totalTracked: number;
+            };
+            sessionConsistency = ss.totalTracked > 0
+              ? (ss.consistentRequests / ss.totalTracked) * 100
+              : 0;
+          }
+          if (comp.type === 'shard-router') {
+            const sr = comp as unknown as { getShardBalance(): number };
+            shardBalance = sr.getShardBalance();
+          }
         }
 
         const finalMetrics: SimulationMetrics = {
@@ -116,6 +132,8 @@ export class PuzzleSimulator {
           dbWriteThroughput,
           replicationLag,
           rejectionRate,
+          sessionConsistency,
+          shardBalance,
         };
 
         const grade = PuzzleValidator.evaluate(finalMetrics, puzzleData.objectives);
@@ -275,6 +293,22 @@ export class PuzzleSimulator {
             (node.data.maxTokens as number) || 500,
             (node.data.refillRate as number) || 200,
             tickRateMs
+          );
+          break;
+
+        case 'session-store':
+          component = new SessionStoreComponent(
+            node.id,
+            (node.data.maxSessions as number) || 10000,
+            (node.data.lookupLatencyMs as number) || 3,
+          );
+          break;
+
+        case 'shard-router':
+          component = new ShardRouterComponent(
+            node.id,
+            (node.data.numPartitions as number) || 3,
+            (node.data.partitionStrategy as string) || 'hash',
           );
           break;
 
@@ -445,6 +479,76 @@ export class PuzzleSimulator {
       return results;
     }
 
+    if (component.type === 'session-store') {
+      // Pipeline: process all requests (adds latency, tracks sessions), then forward downstream
+      const processed = component.process(requests, tick);
+      const forwarded = processed.filter((r) => !r.dropped);
+      const dropped = processed.filter((r) => r.dropped);
+
+      let results = [...dropped];
+
+      if (forwarded.length > 0) {
+        const downstreamTargets = component.getConnectedTargets();
+        if (downstreamTargets.length > 0) {
+          for (const targetId of downstreamTargets) {
+            const target = componentMap.get(targetId);
+            if (target) {
+              const downstream = this.processComponent(target, forwarded, tick, componentMap, edges);
+              results = results.concat(downstream);
+            } else {
+              forwarded.forEach((r) => { r.dropped = true; });
+              results = results.concat(forwarded);
+            }
+          }
+        } else {
+          forwarded.forEach((r) => { r.dropped = true; });
+          results = results.concat(forwarded);
+        }
+      }
+
+      return results;
+    }
+
+    if (component.type === 'shard-router') {
+      // Distributes to downstream shards (like load balancer pattern)
+      const processed = component.process(requests, tick);
+
+      // Group by target shard
+      const shardBuckets = new Map<string, SimRequest[]>();
+      for (const req of processed) {
+        if (req.processedBy && req.processedBy !== component.id) {
+          if (!shardBuckets.has(req.processedBy)) {
+            shardBuckets.set(req.processedBy, []);
+          }
+          shardBuckets.get(req.processedBy)!.push(req);
+        }
+      }
+
+      let results: SimRequest[] = [];
+
+      for (const [targetId, targetRequests] of shardBuckets) {
+        const target = componentMap.get(targetId);
+        if (target) {
+          const targetResults = this.processComponent(target, targetRequests, tick, componentMap, edges);
+          results = results.concat(targetResults);
+        } else {
+          targetRequests.forEach((r) => { r.dropped = true; });
+          results = results.concat(targetRequests);
+        }
+      }
+
+      // Handle unassigned requests
+      const unassigned = processed.filter(
+        (r) => !r.processedBy || r.processedBy === component.id
+      );
+      if (unassigned.length > 0) {
+        unassigned.forEach((r) => { r.dropped = true; });
+        results = results.concat(unassigned);
+      }
+
+      return results;
+    }
+
     if (component.type === 'web-server' || component.type === 'database' || component.type === 'read-replica') {
       const processed = component.process(requests, tick);
 
@@ -517,6 +621,25 @@ export class PuzzleSimulator {
         const totalRl = rlState.allowedCount + rlState.rejectedCount;
         extraData.rejectRate = totalRl > 0 ? (rlState.rejectedCount / totalRl) * 100 : 0;
         extraData.currentTokens = rlState.currentTokens;
+      }
+
+      // Session store-specific visuals
+      if (comp.type === 'session-store') {
+        const ssState = comp.state as typeof comp.state & {
+          sessionHits: number; sessionMisses: number;
+          currentSessions: number; consistentRequests: number; totalTracked: number;
+        };
+        extraData.currentSessions = ssState.currentSessions;
+        extraData.consistencyRate = ssState.totalTracked > 0
+          ? (ssState.consistentRequests / ssState.totalTracked) * 100
+          : 0;
+      }
+
+      // Shard router-specific visuals
+      if (comp.type === 'shard-router') {
+        const srComp = comp as unknown as { getShardBalance(): number; state: { totalRouted: number } };
+        extraData.shardBalance = srComp.getShardBalance();
+        extraData.totalRouted = srComp.state.totalRouted;
       }
 
       // Read replica-specific visuals

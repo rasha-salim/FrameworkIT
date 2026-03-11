@@ -81,6 +81,10 @@ export class PuzzleValidator {
         return metrics.replicationLag ?? 0;
       case 'rejection_rate':
         return metrics.rejectionRate ?? 0;
+      case 'session_consistency':
+        return metrics.sessionConsistency ?? 0;
+      case 'shard_balance':
+        return metrics.shardBalance ?? 0;
       default:
         return 0;
     }

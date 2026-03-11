@@ -13,6 +13,8 @@ const CHAPTER_NPC: Record<string, string> = {
   '02-caching': 'Marcus',
   '03-databases': 'Sarah',
   '04-rate-limiting': 'Marcus',
+  '05-sessions': 'Sarah',
+  '06-partitioning': 'Marcus',
 };
 
 const CHAPTER_NUMBER: Record<string, number> = {
@@ -20,6 +22,8 @@ const CHAPTER_NUMBER: Record<string, number> = {
   '02-caching': 2,
   '03-databases': 3,
   '04-rate-limiting': 4,
+  '05-sessions': 5,
+  '06-partitioning': 6,
 };
 
 export const App: React.FC = () => {

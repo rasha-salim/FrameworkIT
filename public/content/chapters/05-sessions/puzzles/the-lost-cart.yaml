@@ -1,0 +1,97 @@
+id: the-lost-cart
+title: "The Lost Cart"
+chapter: 05-sessions
+difficulty: 3
+
+briefing:
+  npc: sarah
+  text: "Users are losing their shopping carts because each server stores sessions locally. Add a shared session store so all servers can access the same session data. Keep latency low!"
+
+fixedComponents:
+  - id: client-pool
+    type: client-pool
+    position: { x: 50, y: 250 }
+    config:
+      requestsPerSecond: 8000
+      distribution: uniform
+  - id: lb-1
+    type: load-balancer
+    position: { x: 250, y: 250 }
+    config:
+      algorithm: round-robin
+  - id: web-1
+    type: web-server
+    position: { x: 650, y: 100 }
+    config:
+      maxRPS: 3000
+      baseLatencyMs: 15
+  - id: web-2
+    type: web-server
+    position: { x: 650, y: 250 }
+    config:
+      maxRPS: 3000
+      baseLatencyMs: 15
+  - id: web-3
+    type: web-server
+    position: { x: 650, y: 400 }
+    config:
+      maxRPS: 3000
+      baseLatencyMs: 15
+
+availableComponents:
+  - type: session-store
+    maxCount: 2
+    costPerUnit: 300
+
+objectives:
+  bronze:
+    - metric: throughput
+      operator: ">="
+      value: 2000
+    - metric: error_rate
+      operator: "<="
+      value: 10
+    - metric: session_consistency
+      operator: ">="
+      value: 80
+  silver:
+    - metric: throughput
+      operator: ">="
+      value: 2000
+    - metric: error_rate
+      operator: "<="
+      value: 10
+    - metric: session_consistency
+      operator: ">="
+      value: 90
+    - metric: p99_latency
+      operator: "<="
+      value: 200
+  gold:
+    - metric: throughput
+      operator: ">="
+      value: 2000
+    - metric: error_rate
+      operator: "<="
+      value: 10
+    - metric: session_consistency
+      operator: ">="
+      value: 95
+    - metric: p99_latency
+      operator: "<="
+      value: 150
+    - metric: total_cost
+      operator: "<="
+      value: 300
+
+simulation:
+  durationSeconds: 60
+  tickRateMs: 100
+
+debrief:
+  - id: session-approach
+    question: "Why is a shared session store better than sticky sessions for horizontal scaling? What trade-off does each approach make?"
+    hint: "Sticky sessions tie users to specific servers, creating uneven load and single points of failure per user. Shared stores add latency but enable true statelessness."
+  - id: stateless-principle
+    question: "What does it mean for a server to be 'stateless', and why is this important when you have multiple servers behind a load balancer?"
+    hint: "A stateless server stores no user-specific data locally. Any server can handle any request, making them interchangeable clones that can be added or removed freely."

@@ -26,6 +26,8 @@ import { CacheNode } from './nodes/CacheNode';
 import { DatabaseNode } from './nodes/DatabaseNode';
 import { ReadReplicaNode } from './nodes/ReadReplicaNode';
 import { RateLimiterNode } from './nodes/RateLimiterNode';
+import { SessionStoreNode } from './nodes/SessionStoreNode';
+import { ShardRouterNode } from './nodes/ShardRouterNode';
 
 const COMPONENT_LABELS: Record<string, string> = {
   'client-pool': 'Clients',
@@ -35,6 +37,8 @@ const COMPONENT_LABELS: Record<string, string> = {
   'database': 'Primary DB',
   'read-replica': 'Read Replica',
   'rate-limiter': 'Rate Limiter',
+  'session-store': 'Session Store',
+  'shard-router': 'Shard Router',
 };
 
 function getComponentLabel(type: string): string {
@@ -106,6 +110,8 @@ export const PuzzleWorkspace: React.FC = () => {
       'database': DatabaseNode,
       'read-replica': ReadReplicaNode,
       'rate-limiter': RateLimiterNode,
+      'session-store': SessionStoreNode,
+      'shard-router': ShardRouterNode,
     }),
     []
   );

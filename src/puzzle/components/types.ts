@@ -12,6 +12,11 @@ export interface SimRequest {
   cacheKey?: number;
   // Ch 4: rate limiting
   rateLimited?: boolean;
+  // Ch 5: sessions
+  userId?: number;
+  sessionConsistent?: boolean;
+  // Ch 6: partitioning
+  shardKey?: string;
 }
 
 export interface ComponentState {

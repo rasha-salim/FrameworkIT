@@ -65,6 +65,8 @@ const CHAPTER_CONTEXT: Record<string, string> = {
   '02-caching': 'caching strategies, TTL, and cache invalidation',
   '03-databases': 'database read replicas and replication',
   '04-rate-limiting': 'rate limiting strategies and API protection',
+  '05-sessions': 'session management, stateless servers, and shared session stores',
+  '06-partitioning': 'database partitioning, sharding strategies, and data distribution',
 };
 
 export const DebriefUI: React.FC = () => {

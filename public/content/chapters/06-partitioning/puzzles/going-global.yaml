@@ -1,0 +1,97 @@
+id: going-global
+title: "Going Global"
+chapter: 06-partitioning
+difficulty: 5
+
+briefing:
+  npc: marcus
+  text: "Yalla Delivery is live in 6 cities across 3 regions. The single database can't handle all the queries. Add a shard router to distribute database queries across regional clusters. Keep the shards balanced!"
+
+fixedComponents:
+  - id: client-pool
+    type: client-pool
+    position: { x: 50, y: 250 }
+    config:
+      requestsPerSecond: 10000
+      distribution: uniform
+  - id: lb-1
+    type: load-balancer
+    position: { x: 250, y: 250 }
+    config:
+      algorithm: round-robin
+  - id: web-1
+    type: web-server
+    position: { x: 450, y: 100 }
+    config:
+      maxRPS: 4000
+      baseLatencyMs: 10
+  - id: web-2
+    type: web-server
+    position: { x: 450, y: 250 }
+    config:
+      maxRPS: 4000
+      baseLatencyMs: 10
+  - id: web-3
+    type: web-server
+    position: { x: 450, y: 400 }
+    config:
+      maxRPS: 4000
+      baseLatencyMs: 10
+
+availableComponents:
+  - type: shard-router
+    maxCount: 2
+    costPerUnit: 400
+  - type: database
+    maxCount: 4
+    costPerUnit: 500
+
+objectives:
+  bronze:
+    - metric: throughput
+      operator: ">="
+      value: 2000
+    - metric: error_rate
+      operator: "<="
+      value: 15
+  silver:
+    - metric: throughput
+      operator: ">="
+      value: 2000
+    - metric: error_rate
+      operator: "<="
+      value: 15
+    - metric: shard_balance
+      operator: ">="
+      value: 70
+    - metric: p99_latency
+      operator: "<="
+      value: 300
+  gold:
+    - metric: throughput
+      operator: ">="
+      value: 2000
+    - metric: error_rate
+      operator: "<="
+      value: 15
+    - metric: shard_balance
+      operator: ">="
+      value: 85
+    - metric: p99_latency
+      operator: "<="
+      value: 200
+    - metric: total_cost
+      operator: "<="
+      value: 2400
+
+simulation:
+  durationSeconds: 60
+  tickRateMs: 100
+
+debrief:
+  - id: partition-strategy
+    question: "Why did you choose hash or geographic partitioning? What are the trade-offs of each strategy for a food delivery app?"
+    hint: "Geographic partitioning is natural for location-based data (users never need other regions' restaurants). Hash partitioning gives better balance but loses locality. Consider your app's access patterns."
+  - id: shard-balance
+    question: "Why is shard balance important, and what happens when one shard gets significantly more traffic than others?"
+    hint: "An unbalanced shard becomes a bottleneck, defeating the purpose of partitioning. If one shard handles 80% of traffic, you effectively still have a single database problem."

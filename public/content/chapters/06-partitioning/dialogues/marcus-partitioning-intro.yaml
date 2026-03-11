@@ -1,0 +1,107 @@
+id: marcus-partitioning-intro
+nodes:
+  start:
+    id: start
+    speaker: Marcus
+    text: "We're now live in 6 cities across 3 regions. The database is groaning. Queries are slow because every city's data sits in one massive database. We need to split it up."
+    choices:
+      - text: "Can't we just add more read replicas?"
+        next: replicas_limit
+      - text: "You mean partitioning?"
+        next: partitioning
+
+  replicas_limit:
+    id: replicas_limit
+    speaker: Marcus
+    text: "Read replicas help with read load, but the master still handles all writes for every city. Plus, every replica holds ALL the data. We need each database to hold only a fraction of the total data."
+    next: partitioning
+
+  partitioning:
+    id: partitioning
+    speaker: Marcus
+    text: "Partitioning, also called sharding. We split the database into separate clusters, each handling a subset of the data. A user in Amman never needs to see restaurants in Cairo, so why query the same database?"
+    choices:
+      - text: "How do we decide what goes where?"
+        next: partition_key
+      - text: "What are the options?"
+        next: strategies
+
+  partition_key:
+    id: partition_key
+    speaker: Marcus
+    text: "The partition key is everything. For us, geography is the natural split. Each region gets its own database cluster. Queries are faster because they search smaller datasets."
+    choices:
+      - text: "What other strategies exist?"
+        next: strategies
+      - text: "What's the downside?"
+        next: downsides
+
+  strategies:
+    id: strategies
+    speaker: Marcus
+    text: "Two main approaches. Hash partitioning distributes data evenly using a hash function, great for balance but makes range queries hard. Geographic partitioning groups data by region, natural for our use case but can create hot spots."
+    choices:
+      - text: "What are the downsides?"
+        next: downsides
+      - text: "Let me try it out!"
+        next: start_puzzle
+
+  downsides:
+    id: downsides
+    speaker: Marcus
+    text: "Big ones. Cross-partition queries become expensive. Want to know the most ordered dish globally? You have to query every shard and aggregate. Rebalancing shards when one region grows faster than others is painful too."
+    choices:
+      - text: "How do we keep the shards balanced?"
+        next: balance
+      - text: "I think I get it. Let me try!"
+        next: start_puzzle
+
+  balance:
+    id: balance
+    speaker: Marcus
+    text: "The shard router needs to distribute load as evenly as possible across the database clusters. If one shard gets 80% of the traffic, you haven't really solved the problem. Aim for at least 85% balance across shards."
+    next: start_puzzle
+
+  start_puzzle:
+    id: start_puzzle
+    speaker: Marcus
+    text: "Here's the scenario. Web servers are generating 10,000 database queries per second. Add a shard router to distribute queries across multiple database clusters. Keep the shards balanced and throughput high!"
+    action: startPuzzle
+
+  post_complete:
+    id: post_complete
+    speaker: Marcus
+    text: "Nicely done! The databases are handling the regional load smoothly now. Each cluster only deals with its own subset of data. That's the power of partitioning."
+    choices:
+      - text: "What would you do differently in production?"
+        next: production
+      - text: "Thanks, Marcus!"
+        next: end
+        action: end
+
+  production:
+    id: production
+    speaker: Marcus
+    text: "In production, you'd need to handle shard rebalancing when regions grow unevenly, cross-shard transactions for things like global analytics, and a shard map service so applications know which shard to query. But the core principle is the same: divide to conquer."
+    choices:
+      - text: "That's a lot to think about."
+        next: wrap_up
+      - text: "Good to know. See you!"
+        next: end
+        action: end
+
+  wrap_up:
+    id: wrap_up
+    speaker: Marcus
+    text: "You've come a long way. Load balancers, caching, database replication, rate limiting, sessions, and now partitioning. You've built a system that can scale from one server to millions of users. That's real engineering."
+    choices:
+      - text: "What a journey!"
+        next: end
+        action: end
+
+  end:
+    id: end
+    speaker: Marcus
+    text: "The system is solid. Every component you've added was a response to a real scaling problem. Keep building."
+    action: end
+startNode: start

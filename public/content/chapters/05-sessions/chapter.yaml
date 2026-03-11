@@ -1,0 +1,6 @@
+id: 05-sessions
+title: "The Lost Cart"
+description: "Users are losing their shopping carts when the load balancer routes them to different servers. Time to add a shared session store so servers become truly stateless."
+npc: sarah
+puzzles:
+  - the-lost-cart

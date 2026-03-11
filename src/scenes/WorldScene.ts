@@ -140,7 +140,7 @@ export class WorldScene extends Phaser.Scene {
       this
     );
 
-    if (chapter === '02-caching' || chapter === '03-databases' || chapter === '04-rate-limiting' || useGameStore.getState().isChapterCompleted('01-load-balancing')) {
+    if (chapter === '02-caching' || chapter === '03-databases' || chapter === '04-rate-limiting' || chapter === '05-sessions' || chapter === '06-partitioning' || useGameStore.getState().isChapterCompleted('01-load-balancing')) {
       const marcus = new NPC(this, 700, 450, 'Marcus (Senior Eng)', 'marcus', {
         spriteKey: 'npc-marcus',
         labelColor: '#8866cc',
