@@ -47,6 +47,14 @@ export class DialogueEngine {
 
   private constructor() {
     EventBus.on('npc:interact', (npcId) => this.handleInteract(npcId));
+
+    // Handle returning to dashboard after dialogue/puzzle
+    EventBus.on('dialogue:ended', () => {
+      useGameStore.getState().setPhase('exploring');
+    });
+    EventBus.on('puzzle:back-to-world', () => {
+      useGameStore.getState().setPhase('exploring');
+    });
   }
 
   private async handleInteract(npcId: string): Promise<void> {

@@ -1,9 +1,16 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { useDialogueStore } from './DialogueStore';
 import { DialogueEngine } from './DialogueEngine';
+import { useGameStore } from '../core/GameStore';
+import { EventBus } from '../core/EventBus';
+
+const NPC_COLORS: Record<string, string> = {
+  Sarah: '#44cc66',
+  Marcus: '#aa88ff',
+};
 
 export const DialogueUI: React.FC = () => {
-  const { active, currentNode } = useDialogueStore();
+  const { active, currentNode, history, dialogueData } = useDialogueStore();
   const advanceToNode = useDialogueStore((s) => s.advanceToNode);
   const [displayedText, setDisplayedText] = useState('');
   const [isTyping, setIsTyping] = useState(false);
@@ -25,7 +32,7 @@ export const DialogueUI: React.FC = () => {
         clearInterval(interval);
         setIsTyping(false);
       }
-    }, 25);
+    }, 18);
 
     return () => clearInterval(interval);
   }, [currentNode]);
@@ -66,63 +73,151 @@ export const DialogueUI: React.FC = () => {
     }
   }, [currentNode, isTyping, skipTypewriter, advanceToNode]);
 
+  const handleBack = () => {
+    useDialogueStore.getState().endDialogue();
+    useGameStore.getState().setPhase('exploring');
+    EventBus.emit('dialogue:ended');
+  };
+
   if (!active || !currentNode) return null;
 
   const hasChoices = currentNode.choices && currentNode.choices.length > 0;
+  const speakerColor = NPC_COLORS[currentNode.speaker] || '#6688aa';
+
+  // Build conversation history for terminal display
+  const pastMessages: { speaker: string; text: string; nodeId: string }[] = [];
+  if (dialogueData) {
+    for (let i = 0; i < history.length - 1; i++) {
+      const node = dialogueData.nodes[history[i]];
+      if (node) {
+        pastMessages.push({ speaker: node.speaker, text: node.text, nodeId: history[i] });
+      }
+    }
+  }
 
   return (
     <div
       style={{
         position: 'absolute',
-        bottom: 0,
-        left: 0,
-        right: 0,
-        height: '40%',
-        background: 'linear-gradient(to bottom, rgba(10, 14, 30, 0.92), rgba(10, 14, 30, 0.98))',
-        borderTop: '2px solid #334466',
+        inset: 0,
+        background: '#0a0e1a',
         display: 'flex',
         flexDirection: 'column',
-        padding: '24px 48px',
+        fontFamily: 'monospace',
         pointerEvents: 'auto',
       }}
-      onClick={!hasChoices ? handleContinue : undefined}
     >
-      {/* Speaker name */}
+      {/* Background grid */}
       <div
         style={{
-          fontSize: 16,
-          fontWeight: 700,
-          color: '#44cc66',
-          marginBottom: 12,
-          fontFamily: 'monospace',
-          textTransform: 'uppercase',
-          letterSpacing: 2,
+          position: 'fixed',
+          inset: 0,
+          backgroundImage:
+            'linear-gradient(rgba(68, 136, 255, 0.02) 1px, transparent 1px), linear-gradient(90deg, rgba(68, 136, 255, 0.02) 1px, transparent 1px)',
+          backgroundSize: '40px 40px',
+          pointerEvents: 'none',
+        }}
+      />
+
+      {/* Top bar */}
+      <div
+        style={{
+          position: 'relative',
+          display: 'flex',
+          justifyContent: 'space-between',
+          alignItems: 'center',
+          padding: '12px 32px',
+          borderBottom: '1px solid #1a2040',
         }}
       >
-        {currentNode.speaker}
+        <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+          <button
+            onClick={handleBack}
+            style={{
+              background: 'rgba(68, 136, 255, 0.08)',
+              border: '1px solid #2a3355',
+              color: '#6688aa',
+              padding: '4px 12px',
+              borderRadius: 4,
+              cursor: 'pointer',
+              fontSize: 10,
+              fontFamily: 'monospace',
+            }}
+          >
+            {'<'} Back
+          </button>
+          <span style={{ fontSize: 11, color: '#334455' }}>|</span>
+          <span style={{ fontSize: 11, color: '#556677' }}>
+            Mission Briefing
+          </span>
+        </div>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+          <div
+            style={{
+              width: 8,
+              height: 8,
+              borderRadius: '50%',
+              background: speakerColor,
+              opacity: 0.6,
+            }}
+          />
+          <span style={{ fontSize: 11, color: speakerColor }}>
+            {currentNode.speaker} online
+          </span>
+        </div>
       </div>
 
-      {/* Dialogue text */}
+      {/* Terminal conversation area */}
       <div
         style={{
-          fontSize: 18,
-          lineHeight: 1.6,
-          color: '#d0d8e8',
-          fontFamily: "'Segoe UI', system-ui, sans-serif",
+          position: 'relative',
           flex: 1,
+          overflow: 'auto',
+          padding: '24px 32px',
           maxWidth: 800,
+          margin: '0 auto',
+          width: '100%',
         }}
+        onClick={!hasChoices ? handleContinue : undefined}
       >
-        {displayedText}
-        {isTyping && (
-          <span style={{ opacity: 0.5, animation: 'blink 0.5s step-end infinite' }}>|</span>
-        )}
-      </div>
+        {/* Past messages */}
+        {pastMessages.map((msg, i) => (
+          <div key={msg.nodeId + i} style={{ marginBottom: 20, opacity: 0.5 }}>
+            <div style={{ fontSize: 11, color: NPC_COLORS[msg.speaker] || '#6688aa', marginBottom: 4 }}>
+              [{msg.speaker.toLowerCase()}@frameworkit ~]$
+            </div>
+            <div style={{ fontSize: 14, color: '#8899aa', lineHeight: 1.6, paddingLeft: 12 }}>
+              {msg.text}
+            </div>
+          </div>
+        ))}
 
-      {/* Choices or continue prompt */}
-      <div style={{ marginTop: 16 }}>
+        {/* Current message */}
+        <div style={{ marginBottom: 24 }}>
+          <div style={{ fontSize: 11, color: speakerColor, marginBottom: 4 }}>
+            [{currentNode.speaker.toLowerCase()}@frameworkit ~]$
+          </div>
+          <div
+            style={{
+              fontSize: 15,
+              lineHeight: 1.7,
+              color: '#d0d8e8',
+              paddingLeft: 12,
+            }}
+          >
+            {displayedText}
+            {isTyping && (
+              <span style={{ opacity: 0.5, animation: 'blink 0.5s step-end infinite' }}>_</span>
+            )}
+          </div>
+        </div>
+
+        {/* Choices */}
         {!isTyping && hasChoices && (
-          <div style={{ display: 'flex', gap: 12, flexWrap: 'wrap' }}>
+          <div style={{ paddingLeft: 12, display: 'flex', flexDirection: 'column', gap: 6, marginTop: 16 }}>
+            <div style={{ fontSize: 10, color: '#334455', marginBottom: 4 }}>
+              Select an option:
+            </div>
             {currentNode.choices!.map((choice, i) => (
               <button
                 key={i}
@@ -131,39 +226,37 @@ export const DialogueUI: React.FC = () => {
                   handleChoice(choice.next, choice.action);
                 }}
                 style={{
-                  background: 'rgba(68, 136, 255, 0.15)',
-                  border: '1px solid #4488ff44',
+                  background: 'transparent',
+                  border: '1px solid #2a3355',
                   color: '#88bbff',
-                  padding: '10px 20px',
-                  borderRadius: 6,
+                  padding: '8px 16px',
+                  borderRadius: 4,
                   cursor: 'pointer',
-                  fontSize: 14,
+                  fontSize: 13,
                   fontFamily: 'monospace',
-                  transition: 'all 0.2s',
+                  textAlign: 'left',
+                  transition: 'all 0.15s',
                 }}
                 onMouseEnter={(e) => {
-                  e.currentTarget.style.background = 'rgba(68, 136, 255, 0.3)';
-                  e.currentTarget.style.borderColor = '#4488ff88';
+                  e.currentTarget.style.background = 'rgba(68, 136, 255, 0.08)';
+                  e.currentTarget.style.borderColor = '#4488ff';
+                  e.currentTarget.style.color = '#aaccff';
                 }}
                 onMouseLeave={(e) => {
-                  e.currentTarget.style.background = 'rgba(68, 136, 255, 0.15)';
-                  e.currentTarget.style.borderColor = '#4488ff44';
+                  e.currentTarget.style.background = 'transparent';
+                  e.currentTarget.style.borderColor = '#2a3355';
+                  e.currentTarget.style.color = '#88bbff';
                 }}
               >
-                {choice.text}
+                [{i + 1}] {choice.text}
               </button>
             ))}
           </div>
         )}
 
+        {/* Continue prompt */}
         {!isTyping && !hasChoices && (
-          <div
-            style={{
-              fontSize: 12,
-              color: '#556688',
-              fontFamily: 'monospace',
-            }}
-          >
+          <div style={{ paddingLeft: 12, fontSize: 11, color: '#445566', marginTop: 8 }}>
             Click to continue...
           </div>
         )}

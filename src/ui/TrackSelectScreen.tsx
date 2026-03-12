@@ -124,7 +124,7 @@ export const TrackSelectScreen: React.FC = () => {
                 System Design
               </div>
               <div style={{ fontSize: 11, color: '#4488ff', marginTop: 2 }}>
-                4 chapters available
+                6 chapters available
               </div>
             </div>
           </div>
@@ -143,7 +143,7 @@ export const TrackSelectScreen: React.FC = () => {
           </div>
 
           <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
-            {['Load Balancing', 'Caching', 'Databases', 'Rate Limiting'].map(
+            {['Load Balancing', 'Caching', 'Databases', 'Rate Limiting', 'Sessions', 'Partitioning'].map(
               (tag) => (
                 <span
                   key={tag}

@@ -339,8 +339,52 @@ MODIFIED FILES:
 COMMIT MESSAGE:
 feat: add chapters 5 (sessions) and 6 (partitioning) with session store and shard router components
 
+PHASER REMOVAL + TERMINAL UI OVERHAUL (2026-03-11) [COMPLETE]
+- Removed Phaser 2D game engine entirely (no more pixel art, walking, NPC proximity)
+- Replaced with terminal-style first-person interface (pure React)
+- New ChapterDashboard.tsx: mission board showing all 6 chapters with status, grades, NPC info
+  - Locked/available/in-progress/completed states per chapter
+  - Progress bar showing overall completion
+  - Terminal aesthetic with command-line prompts
+  - Click chapter to start NPC dialogue
+- Restyled DialogueUI.tsx: terminal conversation format
+  - NPC messages shown as [sarah@frameworkit ~]$ prompts
+  - Conversation history visible (past messages dimmed)
+  - Numbered choices [1] [2] [3] instead of button pills
+  - Back button to return to dashboard
+  - NPC online indicator in top bar
+- Rewrote main.ts: removed all Phaser initialization, pure React rendering
+- Rewrote App.tsx: simplified phase routing, ChapterDashboard replaces exploring HUD
+- Simplified index.html: removed game-container div, single ui-root
+- Updated DialogueEngine: handles dialogue:ended and puzzle:back-to-world events (was WorldScene)
+- Updated TrackSelectScreen: shows 6 chapters, updated topic tags
+- Removed phaser from package.json
+
+DELETED (now unused):
+- src/scenes/WorldScene.ts (file still exists but no longer imported)
+- src/scenes/BootScene.ts (file still exists but no longer imported)
+- src/world/Player.ts (file still exists but no longer imported)
+- src/world/NPC.ts (file still exists but no longer imported)
+
+MODIFIED FILES:
+- src/main.ts (complete rewrite - Phaser removed)
+- src/ui/App.tsx (complete rewrite - simplified)
+- src/dialogue/DialogueUI.tsx (complete restyle - terminal aesthetic)
+- src/dialogue/DialogueEngine.ts (added event handlers for phase transitions)
+- src/ui/TrackSelectScreen.tsx (6 chapters, updated tags)
+- index.html (removed game-container)
+- package.json (removed phaser dependency)
+
+NEW FILES:
+- src/ui/ChapterDashboard.tsx
+
+COMMIT MESSAGE:
+feat: replace Phaser 2D world with terminal-style chapter dashboard and dialogue UI
+
 NEXT STEPS:
+- Delete unused Phaser files (WorldScene.ts, BootScene.ts, Player.ts, NPC.ts)
 - End-to-end test full Ch1->Ch6 game loop
 - Verify session store puzzle mechanics (userId assignment in ClientPool may need enhancement)
 - Verify shard router puzzle mechanics (balance calculation with real traffic)
+- npm install to remove phaser from node_modules
 - Software Design track implementation (deferred)
