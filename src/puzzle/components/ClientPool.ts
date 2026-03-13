@@ -9,12 +9,14 @@ export class ClientPoolComponent implements SimComponent {
   private readWriteRatio: number;
   private connectedTargets: string[] = [];
   private requestCounter = 0;
+  private userPoolSize: number;
 
-  constructor(id: string, requestsPerSecond: number, tickRateMs: number, readWriteRatio: number = 1.0) {
+  constructor(id: string, requestsPerSecond: number, tickRateMs: number, readWriteRatio: number = 1.0, userPoolSize: number = 500) {
     this.id = id;
     this.requestsPerSecond = requestsPerSecond;
     this.tickRateMs = tickRateMs;
     this.readWriteRatio = readWriteRatio;
+    this.userPoolSize = userPoolSize;
     this.state = {
       id,
       type: 'client-pool',
@@ -42,6 +44,7 @@ export class ClientPoolComponent implements SimComponent {
         dropped: false,
         processedBy: null,
         requestType: isRead ? 'read' : 'write',
+        userId: Math.floor(Math.random() * this.userPoolSize),
       });
     }
 

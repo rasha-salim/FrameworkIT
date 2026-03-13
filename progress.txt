@@ -381,10 +381,53 @@ NEW FILES:
 COMMIT MESSAGE:
 feat: replace Phaser 2D world with terminal-style chapter dashboard and dialogue UI
 
+PHASER FILES CLEANUP (2026-03-12) [COMPLETE]
+- Deleted src/scenes/BootScene.ts, src/scenes/WorldScene.ts, src/world/Player.ts, src/world/NPC.ts
+- Removed empty directories src/scenes/ and src/world/
+- Verified npx tsc --noEmit passes after deletion
+
+CMIW SYSTEM DESIGN DIAGRAM (2026-03-12) [COMPLETE]
+- Generated system-design.md with Mermaid architecture diagram
+- 109 components, 99 relationships, 11 clusters, 0 circular dependencies, Security A (100/100)
+- Top hubs: PuzzleWorkspace (16), PuzzleSimulator (14), PuzzleStore (13)
+
+CLIENTPOOL USERID FIX (2026-03-12) [COMPLETE]
+- ClientPool was not setting userId on generated requests
+- SessionStore (Ch5) and ShardRouter geographic mode (Ch6) both require req.userId
+- Fix: ClientPool now generates userId = random(0..499) from a pool of 500 simulated users
+- This enables session tracking metrics (sessionConsistency) and geographic partitioning
+- File modified: src/puzzle/components/ClientPool.ts
+
+COMMIT MESSAGE:
+fix: add userId to ClientPool requests for session store and shard router mechanics
+
+SOFTWARE DESIGN TRACK -- 6-LEVEL DESIGN (2026-03-13) [COMPLETE]
+- Created comprehensive design document: SOFTWARE_DESIGN_TRACK_LEVELS.md
+- Three-agent team: Researcher (topic identification), Designer (level design), Reviewer (learning quality audit)
+
+RESEARCH PHASE:
+- Analyzed 9 GitHub repos + 4 book references
+- Identified 15 candidate topics spanning SOLID, design patterns, refactoring, DI, clean architecture, hexagonal, DDD, CQRS, event sourcing, resilience
+- Topics ranked by difficulty (2-10) and practical applicability
+
+DESIGN PHASE -- 6 LEVELS:
+- Level 1: SOLID Foundations -- "The Startup That Couldn't Ship" (Diff 3, NPC: Marcus)
+- Level 2: Pattern Language -- "The Shape of the Solution" (Diff 4, NPC: Priya - new)
+- Level 3: Clean Cuts -- "The Legacy Rescue" (Diff 5, NPC: Priya)
+- Level 4: Orchestration -- "The Workflow That Grew Teeth" (Diff 6, NPC: Omar - new)
+- Level 5: Boundaries -- "The Monolith's Last Stand" (Diff 7, NPC: Marcus)
+- Level 6: The Domain -- "The Business Nobody Understood" (Diff 9, NPC: Omar)
+
+REVIEW PHASE:
+- Strongest levels: L3 (hands-on 5/5) and L4 (reflection 4/5)
+- Weakest levels: L2 (pattern matching not construction) and L5 (drag-drop busywork)
+- Top recommendations: rebuild L2 around pattern construction, split L6 or remove CQRS, reduce L5 cards, add what-if challenges
+- 10 prioritized improvements documented in the design file
+
+NEW FILES:
+- SOFTWARE_DESIGN_TRACK_LEVELS.md (full design + review)
+
 NEXT STEPS:
-- Delete unused Phaser files (WorldScene.ts, BootScene.ts, Player.ts, NPC.ts)
-- End-to-end test full Ch1->Ch6 game loop
-- Verify session store puzzle mechanics (userId assignment in ClientPool may need enhancement)
-- Verify shard router puzzle mechanics (balance calculation with real traffic)
-- npm install to remove phaser from node_modules
-- Software Design track implementation (deferred)
+- Address reviewer top 3 recommendations (L2 rebuild, L6 scope, L5 reduction) before implementation
+- End-to-end test full System Design Ch1->Ch6 game loop in browser
+- Begin Software Design track implementation after design approval
