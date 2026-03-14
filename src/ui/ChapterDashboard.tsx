@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { useGameStore, CHAPTER_ORDER } from '../core/GameStore';
+import { useGameStore, CHAPTER_ORDER, SD_CHAPTER_ORDER, getChapterOrder } from '../core/GameStore';
 import { useAuthStore } from '../auth/AuthStore';
 import { EventBus } from '../core/EventBus';
 
@@ -15,6 +15,7 @@ interface ChapterInfo {
 }
 
 const CHAPTER_META: Record<string, { title: string; description: string; npc: string; npcRole: string }> = {
+  // System Design chapters
   '01-load-balancing': {
     title: 'The Traffic Spike',
     description: 'Handle 10,000 requests per second by distributing traffic across multiple servers.',
@@ -51,6 +52,43 @@ const CHAPTER_META: Record<string, { title: string; description: string; npc: st
     npc: 'Marcus',
     npcRole: 'Senior Engineer',
   },
+  // Software Design chapters
+  'sd-01-solid': {
+    title: 'The Startup That Couldn\'t Ship',
+    description: 'Untangle a 2,400-line UserService by applying SOLID principles to a messy codebase.',
+    npc: 'Marcus',
+    npcRole: 'Architect',
+  },
+  'sd-02-patterns': {
+    title: 'The Shape of the Solution',
+    description: 'Refactor rigid code into flexible patterns -- Factory, Builder, Adapter, Decorator.',
+    npc: 'Priya',
+    npcRole: 'Tech Lead',
+  },
+  'sd-03-refactoring': {
+    title: 'The Legacy Rescue',
+    description: 'Rescue a god class with 28 methods using extract, move, and inject refactorings.',
+    npc: 'Priya',
+    npcRole: 'Tech Lead',
+  },
+  'sd-04-orchestration': {
+    title: 'The Workflow That Grew Teeth',
+    description: 'Design a workflow engine using Strategy, Specification, and Observer patterns.',
+    npc: 'Omar',
+    npcRole: 'Domain Expert',
+  },
+  'sd-05-architecture': {
+    title: 'Monolith\'s Last Stand',
+    description: 'Assign components to architecture layers and wire ports to adapters.',
+    npc: 'Marcus',
+    npcRole: 'Architect',
+  },
+  'sd-06-ddd': {
+    title: 'The Business Nobody Understood',
+    description: 'Model aggregate boundaries, classify entities vs value objects, and wire domain events.',
+    npc: 'Omar',
+    npcRole: 'Domain Expert',
+  },
 };
 
 const GRADE_COLORS: Record<string, string> = {
@@ -62,12 +100,17 @@ const GRADE_COLORS: Record<string, string> = {
 export const ChapterDashboard: React.FC = () => {
   const currentChapter = useGameStore((s) => s.currentChapter);
   const completedChapters = useGameStore((s) => s.completedChapters);
+  const selectedTrack = useGameStore((s) => s.selectedTrack);
   const backToTrackSelect = useGameStore((s) => s.backToTrackSelect);
   const playerName = useAuthStore((s) => s.playerName);
   const clearPlayer = useAuthStore((s) => s.clearPlayer);
   const [hoveredChapter, setHoveredChapter] = useState<string | null>(null);
 
-  const chapters: ChapterInfo[] = CHAPTER_ORDER.map((id, index) => {
+  const trackChapterOrder = getChapterOrder(selectedTrack);
+  const trackLabel = selectedTrack === 'software-design' ? 'Software Design' : 'System Design';
+  const accentColor = selectedTrack === 'software-design' ? '#aa66ff' : '#4488ff';
+
+  const chapters: ChapterInfo[] = trackChapterOrder.map((id, index) => {
     const meta = CHAPTER_META[id];
     const isCompleted = completedChapters.includes(id);
     const isCurrent = id === currentChapter;
@@ -82,7 +125,7 @@ export const ChapterDashboard: React.FC = () => {
       status = grade ? 'in-progress' : 'available';
     } else {
       // Check if the previous chapter is completed
-      const prevCompleted = index === 0 || completedChapters.includes(CHAPTER_ORDER[index - 1]);
+      const prevCompleted = index === 0 || completedChapters.includes(trackChapterOrder[index - 1]);
       status = prevCompleted ? 'available' : 'locked';
     }
 
@@ -161,7 +204,7 @@ export const ChapterDashboard: React.FC = () => {
             FrameworkIT
           </span>
           <span style={{ fontSize: 11, color: '#334455' }}>|</span>
-          <span style={{ fontSize: 11, color: '#556677' }}>System Design</span>
+          <span style={{ fontSize: 11, color: '#556677' }}>{trackLabel}</span>
         </div>
 
         <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
@@ -212,7 +255,7 @@ export const ChapterDashboard: React.FC = () => {
         }}
       >
         <div style={{ fontSize: 11, color: '#334455', marginBottom: 4 }}>
-          $ cat /missions/system-design/index
+          $ cat /missions/{selectedTrack || 'system-design'}/index
         </div>
         <div style={{ fontSize: 22, fontWeight: 700, color: '#e0e8f0', marginBottom: 8 }}>
           Mission Board

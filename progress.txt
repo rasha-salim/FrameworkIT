@@ -427,7 +427,119 @@ REVIEW PHASE:
 NEW FILES:
 - SOFTWARE_DESIGN_TRACK_LEVELS.md (full design + review)
 
+SOFTWARE DESIGN TRACK -- REVIEWER RECOMMENDATIONS IMPLEMENTED (2026-03-14) [COMPLETE]
+All 10 reviewer recommendations addressed:
+- L1: Added responsibility labeling, wrong-path feedback, 5 explicit change scenarios, testability metric, diagnose-bad-design warm-up
+- L2: Complete rebuild from pattern selection to pattern construction (4 sequential refactoring challenges with pattern reveal)
+- L3: Clarified step counter excludes test runs, added revert mechanic, before/after comparison, diagnose-bad-design
+- L4: Progressive unlocking (Pipeline+Strategy -> Specification -> Observer), 3 invalid orders for rejection testing, 24th extensibility order
+- L5: Reduced from 30-40 cards to 18 (10 ambiguous), port/adapter wiring as primary, violation injection challenge Phase 3
+- L6: Removed CQRS (difficulty 9->8), raised Bronze threshold to 80%, added 8 trick E/VO classifications, bounded context teaser
+- Cross-level: What-if challenges, cross-level callbacks, self-reflection prompts, diagnose-bad-design, testability scoring in ALL 6 levels
+- Difficulty progression smoothed: 3, 4, 5, 6, 7, 8 (was 3, 4, 5, 6, 7, 9)
+
+MODIFIED FILES:
+- SOFTWARE_DESIGN_TRACK_LEVELS.md (all 6 levels + cross-level specs + review section updated)
+
+SOFTWARE DESIGN TRACK -- PHASE 1 IMPLEMENTATION (2026-03-14) [COMPLETE]
+Multi-track infrastructure + Level 1 (SOLID) vertical slice implemented end-to-end.
+
+MULTI-TRACK INFRASTRUCTURE [COMPLETE]
+- GameStore.ts: Added SD_CHAPTER_ORDER, getChapterOrder(track), track-namespaced localStorage keys (lsKey helper)
+- GameStore.ts: deriveCurrentChapter and loadCompletedChapters now take track parameter
+- GameStore.ts: selectTrack reloads chapter/grade/debrief state for chosen track
+- GameStore.ts: markChapterCompleted and advanceToNextChapter use track-aware chapter order
+- TrackSelectScreen.tsx: Software Design button is now active (was disabled Coming Soon div)
+  - Purple accent color (#aa66ff), full hover effects, 5 topic tags, Start Playing CTA
+- ChapterDashboard.tsx: Track-aware with SD_CHAPTER_ORDER support
+  - Added all 6 SD chapter metadata (title, description, NPC, role)
+  - Dynamic header label (System Design vs Software Design)
+  - Track-aware terminal path in header
+- DialogueEngine.ts: Added all 6 SD chapters to CHAPTER_NPC_MAP
+  - All primaryNPCs maps updated (7 instances across file)
+  - buildDebriefPromptDialogue supports Priya and Omar NPCs
+- App.tsx: Track-aware puzzle/grade dispatch (SDPuzzleWorkspace + SDGradeDisplay for SD track)
+- ContentLoader.ts: Added loadSDPuzzle function for SDPuzzleData type
+- types/index.ts: Added SDMethod, SDClass, SDInterface, SDDependency, ChangeScenario, SDPuzzleObjectives, SDPuzzleData, SoftwareDesignMetrics
+- DebriefUI.tsx: Reads from SD store when on SD track, added SD chapter contexts
+
+SOFTWARE DESIGN PUZZLE ENGINE [COMPLETE]
+- SDPuzzleStore.ts (Zustand): Manages classes, interfaces, dependencies, simulation state
+  - splitClass: extracts methods into new class with auto-dependency
+  - extractInterface: creates interface from class, rewires dependents
+  - moveMethod: transfers methods between classes
+  - Full simulation state (ScenarioResult[], SoftwareDesignMetrics, Grade)
+- SDSimulator.ts: Change propagation engine
+  - Runs each ChangeScenario against player's design
+  - Finds directly affected classes by responsibility group
+  - Propagates changes through concrete dependencies (interfaces block propagation)
+  - Computes 6 metrics: classResponsibilityScore, couplingIndex, changeImpactRadius, interfaceSegregationScore, dependencyDirection, testabilityScore
+- SDValidator.ts: Evaluates SoftwareDesignMetrics against ObjectiveCondition arrays (bronze/silver/gold)
+- SDPuzzleWorkspace.tsx: Main workspace dispatcher, loads puzzle data, dispatches to level components
+- SDGradeDisplay.tsx: Grade display with scenario results panel and SD metric labels
+
+LEVEL 1: SOLID -- "The Startup That Couldn't Ship" [COMPLETE]
+- Level1SOLID.tsx: Code Structure Canvas with full interactivity
+  - Split Tool: select methods, name dialog, creates new class with extracted methods
+  - Extract Interface [I] button: creates dashed-border interface node, rewires dependencies
+  - Responsibility Labeling: click-to-edit, rejects vague labels (Helper, Utils, Manager)
+  - Code Smell Detection: god class, mixed responsibilities, missing labels, circular deps, fat interfaces
+  - Dependency Arrows: SVG lines with arrowheads (solid for depends-on, dashed for implements)
+  - Right panel: violations, structure stats, change scenario list, tool instructions
+  - Scenario result highlighting: affected classes turn red after simulation
+- ClassNode.tsx: Class visualization with methods, responsibility label, split selection, implements badges
+- InterfaceNode.tsx: Dashed-border node with method signatures and remove button
+- CodeSmellBadge.tsx: Severity-colored badges (red/amber/green) with descriptions
+- ScenarioResultsPanel.tsx: Change propagation results with per-scenario class counts
+
+CONTENT YAML [COMPLETE]
+- sd-01-solid/chapter.yaml: chapter metadata
+- sd-01-solid/dialogues/marcus-solid-intro.yaml: 7 dialogue nodes with SOLID explanation branching
+- sd-01-solid/puzzles/startup-that-couldnt-ship.yaml:
+  - 5 initial classes: UserService (14 methods, 5 responsibility groups), OrderService, EmailProvider, AdminDashboard, APIController
+  - 5 change scenarios testing SRP, OCP, ISP, DIP
+  - 3-tier objectives (bronze: score>=70 + impact<=3 + testability>=60, silver: +coupling<=4 + impact<=2 + testability>=80, gold: +ISP=100 + direction>=95 + testability>=95)
+  - 3 debrief questions with hints
+- Stub directories created for sd-02 through sd-06
+
+VERIFICATION:
+- npx tsc --noEmit: ZERO errors
+- Vite build: SUCCESS (237 modules, 484KB bundle)
+- System Design track: UNCHANGED (regression safe)
+
+NEW FILES (16):
+- src/puzzle/software-design/SDPuzzleStore.ts
+- src/puzzle/software-design/SDSimulator.ts
+- src/puzzle/software-design/SDValidator.ts
+- src/puzzle/software-design/SDPuzzleWorkspace.tsx
+- src/puzzle/software-design/SDGradeDisplay.tsx
+- src/puzzle/software-design/levels/Level1SOLID.tsx
+- src/puzzle/software-design/components/ClassNode.tsx
+- src/puzzle/software-design/components/InterfaceNode.tsx
+- src/puzzle/software-design/components/CodeSmellBadge.tsx
+- src/puzzle/software-design/components/ScenarioResultsPanel.tsx
+- public/content/chapters/sd-01-solid/chapter.yaml
+- public/content/chapters/sd-01-solid/dialogues/marcus-solid-intro.yaml
+- public/content/chapters/sd-01-solid/puzzles/startup-that-couldnt-ship.yaml
+- public/content/chapters/sd-02-patterns/ (stub)
+- public/content/chapters/sd-03-refactoring/ through sd-06-ddd/ (stubs)
+
+MODIFIED FILES (8):
+- src/types/index.ts (SD types added)
+- src/core/GameStore.ts (multi-track support)
+- src/core/ContentLoader.ts (loadSDPuzzle)
+- src/ui/App.tsx (track-aware dispatch)
+- src/ui/TrackSelectScreen.tsx (SD button enabled)
+- src/ui/ChapterDashboard.tsx (track-aware metadata)
+- src/dialogue/DialogueEngine.ts (SD chapters + NPCs)
+- src/puzzle/DebriefUI.tsx (SD store + contexts)
+
+COMMIT MESSAGE:
+feat: implement Software Design track with Level 1 SOLID puzzle including multi-track infrastructure and code structure canvas
+
 NEXT STEPS:
-- Address reviewer top 3 recommendations (L2 rebuild, L6 scope, L5 reduction) before implementation
-- End-to-end test full System Design Ch1->Ch6 game loop in browser
-- Begin Software Design track implementation after design approval
+- Browser test: Software Design track selection -> Chapter Dashboard -> Marcus dialogue -> Level 1 puzzle -> Split classes, extract interfaces, label responsibilities -> Deploy -> Grade -> Debrief
+- Implement Levels 2-6 puzzle components (Level2Patterns, Level3Refactoring, Level4Orchestration, Level5Architecture, Level6DDD)
+- Create content YAML for chapters sd-02 through sd-06
+- Add MetricsDashboard equivalent for SD track (live metrics during simulation)
+- End-to-end test System Design track still works unchanged

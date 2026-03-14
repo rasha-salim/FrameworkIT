@@ -1,5 +1,5 @@
 import yaml from 'js-yaml';
-import type { DialogueData, PuzzleData } from '../types';
+import type { DialogueData, PuzzleData, SDPuzzleData } from '../types';
 
 const cache = new Map<string, unknown>();
 
@@ -27,6 +27,12 @@ export async function loadDialogue(chapterId: string, dialogueId: string): Promi
 
 export async function loadPuzzle(chapterId: string, puzzleId: string): Promise<PuzzleData> {
   return loadYaml<PuzzleData>(
+    `/content/chapters/${chapterId}/puzzles/${puzzleId}.yaml`
+  );
+}
+
+export async function loadSDPuzzle(chapterId: string, puzzleId: string): Promise<SDPuzzleData> {
+  return loadYaml<SDPuzzleData>(
     `/content/chapters/${chapterId}/puzzles/${puzzleId}.yaml`
   );
 }

@@ -56,3 +56,11 @@ objectives:
 simulation:
   durationSeconds: 60
   tickRateMs: 100
+
+debrief:
+  - id: what-you-did
+    question: "Explain in your own words what you built and why it handles the traffic that a single server couldn't."
+    hint: "Think about how the load balancer distributes requests and what happens when you add more servers."
+  - id: tradeoffs
+    question: "What trade-offs did you consider? For example, why not just use one very powerful server instead?"
+    hint: "Consider cost, single points of failure, and the limits of vertical vs horizontal scaling."

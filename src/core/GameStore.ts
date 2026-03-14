@@ -10,6 +10,20 @@ export const CHAPTER_ORDER = [
   '06-partitioning',
 ];
 
+export const SD_CHAPTER_ORDER = [
+  'sd-01-solid',
+  'sd-02-patterns',
+  'sd-03-refactoring',
+  'sd-04-orchestration',
+  'sd-05-architecture',
+  'sd-06-ddd',
+];
+
+export function getChapterOrder(track: TrackId | null): string[] {
+  if (track === 'software-design') return SD_CHAPTER_ORDER;
+  return CHAPTER_ORDER;
+}
+
 interface GameState {
   phase: GamePhase;
   selectedTrack: TrackId | null;
@@ -35,23 +49,28 @@ interface GameState {
   isChapterCompleted: (chapter: string) => boolean;
 }
 
-function loadCompletedChapters(): string[] {
+function lsKey(track: TrackId | null, key: string): string {
+  if (track === 'software-design') return `sd-${key}`;
+  return key;
+}
+
+function loadCompletedChapters(track: TrackId | null): string[] {
   try {
-    const stored = localStorage.getItem('completed-chapters');
+    const stored = localStorage.getItem(lsKey(track, 'completed-chapters'));
     return stored ? JSON.parse(stored) : [];
   } catch {
     return [];
   }
 }
 
-function deriveCurrentChapter(completed: string[]): string {
-  for (let i = 0; i < CHAPTER_ORDER.length; i++) {
-    if (!completed.includes(CHAPTER_ORDER[i])) {
-      return CHAPTER_ORDER[i];
+function deriveCurrentChapter(completed: string[], track: TrackId | null): string {
+  const order = getChapterOrder(track);
+  for (let i = 0; i < order.length; i++) {
+    if (!completed.includes(order[i])) {
+      return order[i];
     }
   }
-  // All completed - stay on last chapter
-  return CHAPTER_ORDER[CHAPTER_ORDER.length - 1];
+  return order[order.length - 1];
 }
 
 function loadBestGrade(chapter: string): string | null {
@@ -68,10 +87,10 @@ function loadSelectedTrack(): TrackId | null {
   return null;
 }
 
-const _completedChapters = loadCompletedChapters();
-const _currentChapter = deriveCurrentChapter(_completedChapters);
-const _bestGrade = loadBestGrade(_currentChapter);
 const _selectedTrack = loadSelectedTrack();
+const _completedChapters = loadCompletedChapters(_selectedTrack);
+const _currentChapter = deriveCurrentChapter(_completedChapters, _selectedTrack);
+const _bestGrade = loadBestGrade(_currentChapter);
 const _debriefCompleted = loadDebriefCompleted(_currentChapter);
 
 export const useGameStore = create<GameState>((set, get) => ({
@@ -88,7 +107,19 @@ export const useGameStore = create<GameState>((set, get) => ({
 
   selectTrack: (track) => {
     localStorage.setItem('selected-track', track);
-    set({ selectedTrack: track, phase: 'exploring' });
+    const completed = loadCompletedChapters(track);
+    const current = deriveCurrentChapter(completed, track);
+    const grade = loadBestGrade(current);
+    const debriefDone = loadDebriefCompleted(current);
+    set({
+      selectedTrack: track,
+      phase: 'exploring',
+      completedChapters: completed,
+      currentChapter: current,
+      bestGrade: grade,
+      puzzleCompleted: grade !== null,
+      debriefCompleted: debriefDone,
+    });
   },
 
   backToTrackSelect: () => {
@@ -121,21 +152,22 @@ export const useGameStore = create<GameState>((set, get) => ({
   },
 
   markChapterCompleted: (chapter) => {
-    const { completedChapters } = get();
+    const { completedChapters, selectedTrack } = get();
     if (!completedChapters.includes(chapter)) {
       const updated = [...completedChapters, chapter];
-      localStorage.setItem('completed-chapters', JSON.stringify(updated));
+      localStorage.setItem(lsKey(selectedTrack, 'completed-chapters'), JSON.stringify(updated));
       set({ completedChapters: updated });
     }
   },
 
   advanceToNextChapter: () => {
-    const { currentChapter } = get();
-    const currentIndex = CHAPTER_ORDER.indexOf(currentChapter);
-    if (currentIndex < 0 || currentIndex >= CHAPTER_ORDER.length - 1) {
+    const { currentChapter, selectedTrack } = get();
+    const order = getChapterOrder(selectedTrack);
+    const currentIndex = order.indexOf(currentChapter);
+    if (currentIndex < 0 || currentIndex >= order.length - 1) {
       return false;
     }
-    const nextChapter = CHAPTER_ORDER[currentIndex + 1];
+    const nextChapter = order[currentIndex + 1];
     const nextBestGrade = loadBestGrade(nextChapter);
     const nextDebriefDone = loadDebriefCompleted(nextChapter);
     set({

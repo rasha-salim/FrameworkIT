@@ -155,3 +155,82 @@ export interface SimulationState {
   finalMetrics: SimulationMetrics | null;
   grade: Grade;
 }
+
+// ─── Software Design Track Types ───────────────────────────────
+
+export interface SDMethod {
+  id: string;
+  name: string;
+  responsibilityGroup?: string;
+}
+
+export interface SDClass {
+  id: string;
+  name: string;
+  methods: SDMethod[];
+  dependencies: string[];       // IDs of classes/interfaces this depends on
+  implementsInterfaces: string[]; // IDs of interfaces this implements
+  responsibilityLabel?: string;
+  position: { x: number; y: number };
+}
+
+export interface SDInterface {
+  id: string;
+  name: string;
+  methods: Pick<SDMethod, 'id' | 'name'>[];
+  position: { x: number; y: number };
+}
+
+export interface SDDependency {
+  id: string;
+  source: string;  // class/interface ID
+  target: string;  // class/interface ID
+  type: 'depends-on' | 'implements' | 'creates' | 'wraps' | 'delegates-to';
+}
+
+export interface ChangeScenario {
+  id: string;
+  description: string;
+  tests: string;  // which SOLID principle(s) it tests
+  affectedMethodGroups: string[];  // which responsibility groups are impacted
+}
+
+export interface SDPuzzleObjectives {
+  bronze: ObjectiveCondition[];
+  silver: ObjectiveCondition[];
+  gold: ObjectiveCondition[];
+}
+
+export interface SDPuzzleData {
+  id: string;
+  title: string;
+  chapter: string;
+  difficulty: number;
+  type: 'software-design';
+  briefing: {
+    npc: string;
+    text: string;
+  };
+  initialCodebase: {
+    classes: SDClass[];
+    interfaces: SDInterface[];
+  };
+  changeScenarios: ChangeScenario[];
+  objectives: SDPuzzleObjectives;
+  debrief?: DebriefQuestion[];
+  diagnoseChallenge?: {
+    description: string;
+    badDesignClasses: SDClass[];
+    correctAnswer: string;
+    explanation: string;
+  };
+}
+
+export interface SoftwareDesignMetrics {
+  classResponsibilityScore: number;
+  couplingIndex: number;
+  changeImpactRadius: number;
+  interfaceSegregationScore: number;
+  dependencyDirection: number;
+  testabilityScore: number;
+}

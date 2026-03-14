@@ -179,42 +179,29 @@ export const TrackSelectScreen: React.FC = () => {
         </button>
 
         {/* Software Design Track */}
-        <div
+        <button
+          onClick={() => selectTrack('software-design')}
           onMouseEnter={() => setHoveredTrack('software-design')}
           onMouseLeave={() => setHoveredTrack(null)}
           style={{
-            background: 'linear-gradient(135deg, #0f1428, #141a30)',
-            border: `2px solid ${hoveredTrack === 'software-design' ? '#334466' : '#1e2844'}`,
+            background:
+              hoveredTrack === 'software-design'
+                ? 'linear-gradient(135deg, #1a0f35, #201440)'
+                : 'linear-gradient(135deg, #140f28, #1a1430)',
+            border: `2px solid ${hoveredTrack === 'software-design' ? '#aa66ff' : '#2a2355'}`,
             borderRadius: 16,
             padding: '36px 32px',
             width: 340,
             textAlign: 'left',
-            cursor: 'default',
+            cursor: 'pointer',
             transition: 'all 0.25s',
-            opacity: 0.6,
-            position: 'relative',
-            overflow: 'hidden',
+            transform: hoveredTrack === 'software-design' ? 'translateY(-4px)' : 'none',
+            boxShadow:
+              hoveredTrack === 'software-design'
+                ? '0 8px 32px rgba(170, 102, 255, 0.15)'
+                : 'none',
           }}
         >
-          {/* Coming soon badge */}
-          <div
-            style={{
-              position: 'absolute',
-              top: 16,
-              right: -28,
-              background: 'linear-gradient(135deg, #aa6622, #cc8833)',
-              color: '#fff',
-              fontSize: 9,
-              fontWeight: 700,
-              padding: '4px 32px',
-              transform: 'rotate(35deg)',
-              letterSpacing: 1,
-              textTransform: 'uppercase',
-            }}
-          >
-            Coming Soon
-          </div>
-
           <div
             style={{
               display: 'flex',
@@ -228,21 +215,21 @@ export const TrackSelectScreen: React.FC = () => {
                 width: 44,
                 height: 44,
                 borderRadius: 10,
-                background: 'rgba(170, 102, 255, 0.08)',
+                background: 'rgba(170, 102, 255, 0.12)',
                 display: 'flex',
                 alignItems: 'center',
                 justifyContent: 'center',
                 fontSize: 20,
               }}
             >
-              <span style={{ color: '#8866cc' }}>{'<>'}</span>
+              <span style={{ color: '#aa66ff' }}>{'<>'}</span>
             </div>
             <div>
-              <div style={{ fontSize: 18, fontWeight: 700, color: '#8899aa' }}>
+              <div style={{ fontSize: 18, fontWeight: 700, color: '#e0e8f0' }}>
                 Software Design
               </div>
-              <div style={{ fontSize: 11, color: '#556677', marginTop: 2 }}>
-                In development
+              <div style={{ fontSize: 11, color: '#aa66ff', marginTop: 2 }}>
+                6 chapters available
               </div>
             </div>
           </div>
@@ -250,25 +237,25 @@ export const TrackSelectScreen: React.FC = () => {
           <div
             style={{
               fontSize: 13,
-              color: '#667788',
+              color: '#8899aa',
               lineHeight: 1.6,
               marginBottom: 20,
             }}
           >
-            Master software architecture patterns. Design patterns, SOLID
-            principles, refactoring -- learn to write clean, maintainable code
-            through hands-on challenges.
+            Master software architecture patterns. SOLID principles, design
+            patterns, refactoring, DDD -- learn to write clean, maintainable
+            code through hands-on challenges.
           </div>
 
           <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
-            {['Design Patterns', 'SOLID', 'Refactoring'].map((tag) => (
+            {['SOLID', 'Design Patterns', 'Refactoring', 'Architecture', 'DDD'].map((tag) => (
               <span
                 key={tag}
                 style={{
                   fontSize: 10,
-                  color: '#556677',
-                  background: 'rgba(136, 102, 204, 0.06)',
-                  border: '1px solid rgba(136, 102, 204, 0.12)',
+                  color: '#aa66ff',
+                  background: 'rgba(170, 102, 255, 0.08)',
+                  border: '1px solid rgba(170, 102, 255, 0.2)',
                   borderRadius: 4,
                   padding: '3px 8px',
                 }}
@@ -277,7 +264,22 @@ export const TrackSelectScreen: React.FC = () => {
               </span>
             ))}
           </div>
-        </div>
+
+          <div
+            style={{
+              marginTop: 20,
+              fontSize: 12,
+              fontWeight: 700,
+              color: '#aa66ff',
+              display: 'flex',
+              alignItems: 'center',
+              gap: 6,
+            }}
+          >
+            Start Playing
+            <span style={{ fontSize: 14 }}>{'-->'}</span>
+          </div>
+        </button>
       </div>
 
       {/* Footer */}

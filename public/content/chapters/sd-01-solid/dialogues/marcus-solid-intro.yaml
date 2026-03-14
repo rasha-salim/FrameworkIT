@@ -1,0 +1,96 @@
+id: marcus-solid-intro
+startNode: greeting
+
+nodes:
+  greeting:
+    id: greeting
+    speaker: Marcus
+    text: >
+      Hey, glad you could come in. I have been staring at this codebase for
+      three hours and I think I need a second pair of eyes. We have a real
+      structural problem.
+    next: explain-problem
+
+  explain-problem:
+    id: explain-problem
+    speaker: Marcus
+    text: >
+      Our UserService started as a clean 200-line class six months ago. Now it
+      is 2,400 lines. It handles user validation, payment processing, email
+      notifications, data serialization, and database access -- all in one file.
+      Last Friday, a bug fix for payments accidentally broke email notifications.
+    choices:
+      - text: What are the symptoms?
+        next: symptoms
+      - text: What are SOLID principles?
+        next: explain-solid
+      - text: Let me take a look at the code.
+        next: start-puzzle
+        action: start-puzzle
+
+  symptoms:
+    id: symptoms
+    speaker: Marcus
+    text: >
+      Three things keep happening. First, every pull request touches the same
+      file, so we have constant merge conflicts. Second, a change to one feature
+      breaks unrelated features because everything is coupled. Third, we cannot
+      write unit tests because every class instantiates its own dependencies
+      with hard-coded new calls.
+    choices:
+      - text: What are SOLID principles?
+        next: explain-solid
+      - text: I think I understand. Let me restructure it.
+        next: start-puzzle
+        action: start-puzzle
+
+  explain-solid:
+    id: explain-solid
+    speaker: Marcus
+    text: >
+      SOLID is a set of five design principles. Single Responsibility means each
+      class should have one reason to change. Open-Closed means you should be
+      able to add new behavior without modifying existing code. Liskov Substitution
+      means implementations should be interchangeable. Interface Segregation means
+      no class should depend on methods it does not use. And Dependency Inversion
+      means high-level code should depend on abstractions, not concretions.
+    choices:
+      - text: What does that look like in practice?
+        next: practical
+      - text: Got it. Let me restructure the code.
+        next: start-puzzle
+        action: start-puzzle
+
+  practical:
+    id: practical
+    speaker: Marcus
+    text: >
+      In practice, it means splitting that god-class UserService into focused
+      classes -- one for authentication, one for payment processing, one for
+      notifications. Then each of those depends on interfaces rather than
+      directly on each other. When you need to swap Stripe for Square, you
+      only touch the payment implementation class.
+    choices:
+      - text: Makes sense. Let me try it.
+        next: start-puzzle
+        action: start-puzzle
+
+  start-puzzle:
+    id: start-puzzle
+    speaker: Marcus
+    text: >
+      Great. I have pulled up the dependency graph. You will see class nodes
+      with their method lists. Use the Split tool to break apart classes,
+      then label each one with its single responsibility. Extract interfaces
+      to decouple the dependencies. When you are ready, hit Deploy and the
+      system will run five change scenarios to test your structure.
+    action: startPuzzle
+
+  post_complete:
+    id: post_complete
+    speaker: Marcus
+    text: >
+      Nice work on the restructuring. The change propagation results look
+      much better now. Remember -- SOLID is a compass, not a destination.
+      Over-application creates its own mess.
+    action: end

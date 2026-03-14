@@ -1,0 +1,9 @@
+id: sd-01-solid
+title: "The Startup That Couldn't Ship"
+description: >
+  A 4-person startup has been shipping fast for 6 months. Their UserService
+  class is now 2,400 lines and every feature change breaks three other features.
+  Apply SOLID principles to untangle the codebase.
+npc: marcus-the-architect
+puzzles:
+  - startup-that-couldnt-ship

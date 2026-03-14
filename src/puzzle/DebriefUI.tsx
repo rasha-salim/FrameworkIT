@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { usePuzzleStore } from './PuzzleStore';
+import { useSDPuzzleStore } from './software-design/SDPuzzleStore';
 import { useGameStore } from '../core/GameStore';
 import { EventBus } from '../core/EventBus';
 import type { DebriefQuestion } from '../types';
@@ -67,12 +68,23 @@ const CHAPTER_CONTEXT: Record<string, string> = {
   '04-rate-limiting': 'rate limiting strategies and API protection',
   '05-sessions': 'session management, stateless servers, and shared session stores',
   '06-partitioning': 'database partitioning, sharding strategies, and data distribution',
+  'sd-01-solid': 'SOLID principles, single responsibility, dependency inversion',
+  'sd-02-patterns': 'design patterns, Factory, Builder, Adapter, Decorator',
+  'sd-03-refactoring': 'refactoring, code smells, dependency injection',
+  'sd-04-orchestration': 'behavioral patterns, Strategy, Observer, Repository',
+  'sd-05-architecture': 'layered architecture, hexagonal architecture, ports and adapters',
+  'sd-06-ddd': 'domain-driven design, aggregates, domain events, value objects',
 };
 
 export const DebriefUI: React.FC = () => {
-  const puzzleData = usePuzzleStore((s) => s.puzzleData);
+  const selectedTrack = useGameStore((s) => s.selectedTrack);
+  const sysPuzzleData = usePuzzleStore((s) => s.puzzleData);
+  const sdPuzzleData = useSDPuzzleStore((s) => s.puzzleData);
+  const puzzleData = selectedTrack === 'software-design' ? sdPuzzleData : sysPuzzleData;
   const currentChapter = useGameStore((s) => s.currentChapter);
-  const grade = usePuzzleStore((s) => s.simulationState.grade);
+  const sysGrade = usePuzzleStore((s) => s.simulationState.grade);
+  const sdGrade = useSDPuzzleStore((s) => s.simulationState.grade);
+  const grade = selectedTrack === 'software-design' ? sdGrade : sysGrade;
 
   const questions = puzzleData?.debrief?.length ? puzzleData.debrief : FALLBACK_QUESTIONS;
 

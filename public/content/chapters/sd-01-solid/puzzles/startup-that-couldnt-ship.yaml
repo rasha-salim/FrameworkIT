@@ -1,0 +1,246 @@
+id: startup-that-couldnt-ship
+title: "The Startup That Couldn't Ship"
+chapter: sd-01-solid
+difficulty: 3
+type: software-design
+
+briefing:
+  npc: marcus
+  text: >
+    Our UserService is 2,400 lines and every feature change breaks three
+    other features. We need to untangle this before we hire two more devs.
+    Right now, nobody can work in parallel without stepping on each other.
+
+initialCodebase:
+  classes:
+    - id: user-service
+      name: UserService
+      methods:
+        - id: validate-user
+          name: validateUser
+          responsibilityGroup: authentication
+        - id: hash-password
+          name: hashPassword
+          responsibilityGroup: authentication
+        - id: check-permissions
+          name: checkPermissions
+          responsibilityGroup: authentication
+        - id: process-payment
+          name: processPayment
+          responsibilityGroup: payment
+        - id: refund-payment
+          name: refundPayment
+          responsibilityGroup: payment
+        - id: calculate-tax
+          name: calculateTax
+          responsibilityGroup: payment
+        - id: send-email
+          name: sendEmail
+          responsibilityGroup: notification
+        - id: send-sms
+          name: sendSMS
+          responsibilityGroup: notification
+        - id: format-notification
+          name: formatNotification
+          responsibilityGroup: notification
+        - id: serialize-user
+          name: serializeUser
+          responsibilityGroup: serialization
+        - id: deserialize-user
+          name: deserializeUser
+          responsibilityGroup: serialization
+        - id: save-to-db
+          name: saveToDatabase
+          responsibilityGroup: persistence
+        - id: find-by-id
+          name: findById
+          responsibilityGroup: persistence
+        - id: find-by-email
+          name: findByEmail
+          responsibilityGroup: persistence
+      dependencies:
+        - order-service
+        - email-provider
+      implementsInterfaces: []
+      position:
+        x: 300
+        y: 200
+
+    - id: order-service
+      name: OrderService
+      methods:
+        - id: create-order
+          name: createOrder
+          responsibilityGroup: orders
+        - id: cancel-order
+          name: cancelOrder
+          responsibilityGroup: orders
+        - id: get-order-history
+          name: getOrderHistory
+          responsibilityGroup: orders
+      dependencies:
+        - user-service
+      implementsInterfaces: []
+      position:
+        x: 650
+        y: 100
+
+    - id: email-provider
+      name: EmailProvider
+      methods:
+        - id: connect-smtp
+          name: connectSMTP
+          responsibilityGroup: email-infra
+        - id: send-raw-email
+          name: sendRawEmail
+          responsibilityGroup: email-infra
+        - id: check-deliverability
+          name: checkDeliverability
+          responsibilityGroup: email-infra
+      dependencies: []
+      implementsInterfaces: []
+      position:
+        x: 650
+        y: 350
+
+    - id: admin-dashboard
+      name: AdminDashboard
+      methods:
+        - id: export-users
+          name: exportUsers
+          responsibilityGroup: admin
+        - id: bulk-update
+          name: bulkUpdate
+          responsibilityGroup: admin
+        - id: generate-report
+          name: generateReport
+          responsibilityGroup: admin
+      dependencies:
+        - user-service
+      implementsInterfaces: []
+      position:
+        x: 50
+        y: 100
+
+    - id: api-controller
+      name: APIController
+      methods:
+        - id: handle-register
+          name: handleRegister
+          responsibilityGroup: api
+        - id: handle-login
+          name: handleLogin
+          responsibilityGroup: api
+        - id: handle-payment
+          name: handlePayment
+          responsibilityGroup: api
+      dependencies:
+        - user-service
+      implementsInterfaces: []
+      position:
+        x: 50
+        y: 350
+
+  interfaces: []
+
+changeScenarios:
+  - id: switch-payment
+    description: "Switch payment provider from Stripe to Square"
+    tests: SRP + DIP
+    affectedMethodGroups:
+      - payment
+
+  - id: add-sms
+    description: "Add SMS notifications alongside email"
+    tests: OCP
+    affectedMethodGroups:
+      - notification
+
+  - id: change-format
+    description: "Change user data format from JSON to Protobuf"
+    tests: SRP
+    affectedMethodGroups:
+      - serialization
+
+  - id: add-admin-export
+    description: "Add admin-only bulk user export"
+    tests: ISP
+    affectedMethodGroups:
+      - admin
+      - persistence
+
+  - id: replace-db
+    description: "Replace MySQL with PostgreSQL for the user store"
+    tests: DIP
+    affectedMethodGroups:
+      - persistence
+
+objectives:
+  bronze:
+    - metric: class_responsibility_score
+      operator: ">="
+      value: 70
+    - metric: change_impact_radius
+      operator: "<="
+      value: 3
+    - metric: testability_score
+      operator: ">="
+      value: 60
+  silver:
+    - metric: class_responsibility_score
+      operator: ">="
+      value: 70
+    - metric: coupling_index
+      operator: "<="
+      value: 4
+    - metric: change_impact_radius
+      operator: "<="
+      value: 2
+    - metric: testability_score
+      operator: ">="
+      value: 80
+  gold:
+    - metric: class_responsibility_score
+      operator: ">="
+      value: 70
+    - metric: interface_segregation_score
+      operator: ">="
+      value: 100
+    - metric: change_impact_radius
+      operator: "<="
+      value: 2
+    - metric: dependency_direction
+      operator: ">="
+      value: 95
+    - metric: testability_score
+      operator: ">="
+      value: 95
+
+debrief:
+  - id: hardest-split
+    question: >
+      What was the hardest split decision you made? Which methods were
+      ambiguous about where they belonged?
+    hint: >
+      Think about methods like calculateTax -- does it belong with payment
+      processing or as its own tax service? There is no single right answer,
+      only trade-offs in cohesion.
+
+  - id: change-propagation
+    question: >
+      Look at the payment provider switch scenario. Before your restructuring,
+      how many classes would have been affected? After your changes, how many
+      are affected now? What principle made the difference?
+    hint: >
+      If payment logic is isolated behind an interface and the concrete
+      implementation is the only class that talks to Stripe, then switching
+      providers only touches one class. That is Dependency Inversion at work.
+
+  - id: over-engineering
+    question: >
+      Could you keep splitting classes further? When does splitting become
+      over-engineering? What signal tells you to stop?
+    hint: >
+      If a class has only one or two methods and they always change together,
+      splitting further creates overhead without benefit. SOLID is a compass,
+      not a destination.

@@ -12,6 +12,7 @@ interface ChapterDialogueConfig {
 }
 
 const CHAPTER_NPC_MAP: Record<string, Record<string, ChapterDialogueConfig>> = {
+  // System Design chapters
   '01-load-balancing': {
     sarah: { dialogue: 'sarah-intro', puzzleId: 'handle-10k-rps' },
   },
@@ -34,6 +35,25 @@ const CHAPTER_NPC_MAP: Record<string, Record<string, ChapterDialogueConfig>> = {
   '06-partitioning': {
     marcus: { dialogue: 'marcus-partitioning-intro', puzzleId: 'going-global' },
     sarah: { dialogue: 'sarah-sessions-intro', puzzleId: 'the-lost-cart' },
+  },
+  // Software Design chapters
+  'sd-01-solid': {
+    marcus: { dialogue: 'marcus-solid-intro', puzzleId: 'startup-that-couldnt-ship' },
+  },
+  'sd-02-patterns': {
+    priya: { dialogue: 'priya-patterns-intro', puzzleId: 'shape-of-the-solution' },
+  },
+  'sd-03-refactoring': {
+    priya: { dialogue: 'priya-refactoring-intro', puzzleId: 'the-legacy-rescue' },
+  },
+  'sd-04-orchestration': {
+    omar: { dialogue: 'omar-orchestration-intro', puzzleId: 'workflow-that-grew-teeth' },
+  },
+  'sd-05-architecture': {
+    marcus: { dialogue: 'marcus-architecture-intro', puzzleId: 'monoliths-last-stand' },
+  },
+  'sd-06-ddd': {
+    omar: { dialogue: 'omar-ddd-intro', puzzleId: 'business-nobody-understood' },
   },
 };
 
@@ -131,6 +151,12 @@ export class DialogueEngine {
       '04-rate-limiting': 'marcus',
       '05-sessions': 'sarah',
       '06-partitioning': 'marcus',
+      'sd-01-solid': 'marcus',
+      'sd-02-patterns': 'priya',
+      'sd-03-refactoring': 'priya',
+      'sd-04-orchestration': 'omar',
+      'sd-05-architecture': 'marcus',
+      'sd-06-ddd': 'omar',
     };
     return primaryNPCs[chapter] === npcId;
   }
@@ -152,6 +178,12 @@ export class DialogueEngine {
       '04-rate-limiting': 'marcus',
       '05-sessions': 'sarah',
       '06-partitioning': 'marcus',
+      'sd-01-solid': 'marcus',
+      'sd-02-patterns': 'priya',
+      'sd-03-refactoring': 'priya',
+      'sd-04-orchestration': 'omar',
+      'sd-05-architecture': 'marcus',
+      'sd-06-ddd': 'omar',
     };
 
     for (const [chapter, primaryNpc] of Object.entries(primaryNPCs)) {
@@ -171,6 +203,12 @@ export class DialogueEngine {
       '04-rate-limiting': 'marcus',
       '05-sessions': 'sarah',
       '06-partitioning': 'marcus',
+      'sd-01-solid': 'marcus',
+      'sd-02-patterns': 'priya',
+      'sd-03-refactoring': 'priya',
+      'sd-04-orchestration': 'omar',
+      'sd-05-architecture': 'marcus',
+      'sd-06-ddd': 'omar',
     };
 
     for (const [chapter, primaryNpc] of Object.entries(primaryNPCs)) {
@@ -182,7 +220,13 @@ export class DialogueEngine {
   }
 
   private buildDebriefPromptDialogue(npcId: string, _config: ChapterDialogueConfig): DialogueData {
-    const speaker = npcId === 'sarah' ? 'Sarah' : 'Marcus';
+    const speakerMap: Record<string, string> = {
+      sarah: 'Sarah',
+      marcus: 'Marcus',
+      priya: 'Priya',
+      omar: 'Omar',
+    };
+    const speaker = speakerMap[npcId] || 'NPC';
     return {
       id: 'debrief-prompt',
       startNode: 'start',
@@ -233,6 +277,14 @@ export class DialogueEngine {
         '02-caching': 'marcus',
         '03-databases': 'sarah',
         '04-rate-limiting': 'marcus',
+        '05-sessions': 'sarah',
+        '06-partitioning': 'marcus',
+        'sd-01-solid': 'marcus',
+        'sd-02-patterns': 'priya',
+        'sd-03-refactoring': 'priya',
+        'sd-04-orchestration': 'omar',
+        'sd-05-architecture': 'marcus',
+        'sd-06-ddd': 'omar',
       };
       const primaryNpc = primaryNPCs[currentChapter];
       const config = chapterConfig[primaryNpc];
@@ -253,6 +305,14 @@ export class DialogueEngine {
         '02-caching': 'marcus',
         '03-databases': 'sarah',
         '04-rate-limiting': 'marcus',
+        '05-sessions': 'sarah',
+        '06-partitioning': 'marcus',
+        'sd-01-solid': 'marcus',
+        'sd-02-patterns': 'priya',
+        'sd-03-refactoring': 'priya',
+        'sd-04-orchestration': 'omar',
+        'sd-05-architecture': 'marcus',
+        'sd-06-ddd': 'omar',
       };
       const primaryNpc = primaryNPCs[currentChapter];
       const config = chapterConfig[primaryNpc];
